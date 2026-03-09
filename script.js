@@ -1,0 +1,771 @@
+document.addEventListener('DOMContentLoaded', () => {
+    // --- Developer's Master Apps Script URL --- //
+    const MASTER_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzdhJBvNkp1DMGimriV99RVFaIJzsz2KJzJ5IC8P1u2TIUCH358eFqGSbXzyGZtiAiUHQ/exec';
+
+    // UI Elements
+    const form = document.getElementById('transactionForm');
+    const transactionList = document.getElementById('transactionList');
+    const listLoading = document.getElementById('listLoading');
+    const totalIncomeEl = document.getElementById('totalIncome');
+    const totalExpenseEl = document.getElementById('totalExpense');
+    const balanceEl = document.getElementById('balance');
+    const submitBtn = document.getElementById('submitBtn');
+    const cloudSyncStatus = document.getElementById('cloudSyncStatus');
+    const userAccountName = document.getElementById('userAccountName');
+    const sheetDocName = document.getElementById('sheetDocName');
+
+    // Sidebar UI Elements
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    const openSidebarBtn = document.getElementById('openSidebarBtn');
+    const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+    const menuDashboard = document.getElementById('menuDashboard');
+    const menuHistory = document.getElementById('menuHistory');
+    const headerTitle = document.getElementById('headerTitle');
+
+    // Views
+    const viewDashboard = document.getElementById('viewDashboard');
+    const viewHistory = document.getElementById('viewHistory');
+
+    // Profile UI Elements
+    const activeProfileIndicator = document.getElementById('activeProfileIndicator');
+    const profileModal = document.getElementById('profileModal');
+    const menuProfiles = document.getElementById('menuProfiles');
+    const closeProfileBtn = document.getElementById('closeProfileBtn');
+    const profilesList = document.getElementById('profilesList');
+    const addProfileForm = document.getElementById('addProfileForm');
+    const newProfileName = document.getElementById('newProfileName');
+
+    // New UI Elements
+    const amountDisplay = document.getElementById('amountDisplay');
+    const amountVal = document.getElementById('amountVal');
+    const searchInput = document.getElementById('searchInput');
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const sortOrder = document.getElementById('sortOrder');
+
+    // List & Filter Elements
+    const dashboardListLoading = document.getElementById('dashboardListLoading');
+    const historyListLoading = document.getElementById('historyListLoading');
+    const recentTransactionList = document.getElementById('recentTransactionList');
+    const historyTransactionList = document.getElementById('historyTransactionList');
+    const viewAllBtn = document.getElementById('viewAllBtn');
+
+    const dateFilter = document.getElementById('dateFilter');
+    const clearDateBtn = document.getElementById('clearDateBtn');
+    const cloudSyncStatusDashboard = document.getElementById('cloudSyncStatusDashboard');
+    const cloudSyncStatusHistory = document.getElementById('cloudSyncStatusHistory');
+
+    // Settings
+    let userSheetUrl = localStorage.getItem('userSheetUrl') || '';
+    const settingsModal = document.getElementById('settingsModal');
+    const openSettingsBtn = document.getElementById('openSettingsBtn');
+    const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+    const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+    const sheetUrlInput = document.getElementById('sheetUrlInput');
+    const settingsStatusMsg = document.getElementById('settingsStatusMsg');
+
+    // State Variables
+    let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+    let currentFilter = 'All'; // All, Pemasukan, Pengeluaran
+    let currentSort = 'Terbaru'; // Terbaru, Terlama, Tertinggi, Terendah
+    let currentSearch = '';
+    let currentDateFilter = ''; // YYYY-MM-DD
+    let financeChartInstance = null;
+
+    // Profiles State
+    let profiles = JSON.parse(localStorage.getItem('profiles')) || [{ id: '1', name: 'Utama' }];
+    let activeProfileId = localStorage.getItem('activeProfileId') || '1';
+
+    // Helper: format currency IDR Text
+    const formatCurrencyDisplay = (amountStr) => {
+        let numberStr = amountStr.replace(/[^0-9]/g, '');
+        if (!numberStr) return '';
+        return new Intl.NumberFormat('id-ID').format(parseInt(numberStr));
+    };
+
+    // Helper: format currency IDR for HTML
+    const formatCurrency = (amount) => {
+        return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
+    };
+
+    // Helper: format date for display
+    const formatDate = (dateString) => {
+        const options = { year: 'numeric', month: 'short', day: 'numeric' };
+        return new Date(dateString).toLocaleDateString('id-ID', options);
+    };
+
+    // -----------------------------------------
+    // Event Listeners for Dynamic UI Inputs & Menus
+    // -----------------------------------------
+
+    // Sidebar Toggles
+    const toggleSidebar = () => {
+        const isClosed = sidebar.classList.contains('-translate-x-full');
+        if (isClosed) {
+            sidebar.classList.remove('-translate-x-full');
+            sidebarOverlay.classList.remove('opacity-0', 'pointer-events-none');
+        } else {
+            sidebar.classList.add('-translate-x-full');
+            sidebarOverlay.classList.add('opacity-0', 'pointer-events-none');
+        }
+    };
+
+    if (openSidebarBtn) openSidebarBtn.addEventListener('click', toggleSidebar);
+    if (closeSidebarBtn) closeSidebarBtn.addEventListener('click', toggleSidebar);
+    if (sidebarOverlay) sidebarOverlay.addEventListener('click', toggleSidebar);
+
+    // Navigation / View Switching
+    const switchView = (viewName) => {
+        if (window.innerWidth < 1024) toggleSidebar(); // auto close mobile sidebar
+
+        if (viewName === 'dashboard') {
+            viewHistory.classList.add('hidden', 'opacity-0');
+            viewDashboard.classList.remove('hidden');
+            setTimeout(() => viewDashboard.classList.remove('opacity-0'), 10);
+
+            menuDashboard.classList.add('bg-indigo-50', 'text-indigo-700');
+            menuDashboard.classList.remove('text-slate-600');
+            menuHistory.classList.remove('bg-indigo-50', 'text-indigo-700');
+            menuHistory.classList.add('text-slate-600');
+
+            if (headerTitle) headerTitle.textContent = "Dashboard Overview";
+            renderDashboardList();
+        } else if (viewName === 'history') {
+            viewDashboard.classList.add('hidden', 'opacity-0');
+            viewHistory.classList.remove('hidden');
+            setTimeout(() => viewHistory.classList.remove('opacity-0'), 10);
+
+            menuHistory.classList.add('bg-indigo-50', 'text-indigo-700');
+            menuHistory.classList.remove('text-slate-600');
+            menuDashboard.classList.remove('bg-indigo-50', 'text-indigo-700');
+            menuDashboard.classList.add('text-slate-600');
+
+            if (headerTitle) headerTitle.textContent = "Riwayat & Grafik";
+            renderHistoryList();
+        }
+    };
+
+    if (menuDashboard) menuDashboard.addEventListener('click', (e) => { e.preventDefault(); switchView('dashboard'); });
+    if (menuHistory) menuHistory.addEventListener('click', (e) => { e.preventDefault(); switchView('history'); });
+    if (viewAllBtn) viewAllBtn.addEventListener('click', () => switchView('history'));
+
+    // Currency Masking on Amount Input
+    amountDisplay.addEventListener('input', function (e) {
+        let val = this.value;
+        val = val.replace(/[^0-9]/g, ''); // strip non numeric
+        amountVal.value = val; // save raw value
+        this.value = formatCurrencyDisplay(val); // show formatted
+    });
+
+    // Date Filter Logic
+    if (dateFilter) {
+        dateFilter.addEventListener('change', (e) => {
+            currentDateFilter = e.target.value;
+            if (currentDateFilter) {
+                clearDateBtn.classList.remove('hidden');
+            } else {
+                clearDateBtn.classList.add('hidden');
+            }
+            renderHistoryList();
+        });
+    }
+
+    if (clearDateBtn) {
+        clearDateBtn.addEventListener('click', () => {
+            dateFilter.value = '';
+            currentDateFilter = '';
+            clearDateBtn.classList.add('hidden');
+            renderHistoryList();
+        });
+    }
+
+    // Filtering
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            // Remove active style from all
+            filterBtns.forEach(b => {
+                b.classList.remove('active', 'bg-white', 'text-slate-800', 'shadow-sm');
+                b.classList.add('text-slate-500');
+            });
+            // Add active style to clicked
+            const target = e.currentTarget;
+            target.classList.remove('text-slate-500');
+            target.classList.add('active', 'bg-white', 'text-slate-800', 'shadow-sm');
+
+            currentFilter = target.getAttribute('data-filter');
+            renderHistoryList();
+        });
+    });
+
+    // Sorting
+    sortOrder.addEventListener('change', (e) => {
+        currentSort = e.target.value;
+        renderHistoryList();
+    });
+
+    // Searching
+    searchInput.addEventListener('input', (e) => {
+        currentSearch = e.target.value.toLowerCase();
+        renderHistoryList();
+    });
+
+
+    // -----------------------------------------
+    // Set Loading States
+    // -----------------------------------------
+    const setLoading = (isLoading) => {
+        if (isLoading) {
+            balanceLoading.classList.remove('hidden');
+            document.getElementById('balance').classList.add('hidden');
+            document.getElementById('totalIncome').textContent = '...';
+            document.getElementById('totalExpense').textContent = '...';
+            dashboardListLoading.classList.remove('hidden');
+            historyListLoading.classList.remove('hidden');
+            recentTransactionList.innerHTML = '';
+            historyTransactionList.innerHTML = '';
+        } else {
+            balanceLoading.classList.add('hidden');
+            document.getElementById('balance').classList.remove('hidden');
+            dashboardListLoading.classList.add('hidden');
+            historyListLoading.classList.add('hidden');
+        }
+    };
+
+    const updateCloudSyncStatus = (statusText, isError = false) => {
+        const errorHtml = isError ? `<span class="bg-rose-50 text-rose-600 px-3 py-1.5 rounded-full text-xs font-medium border border-rose-100">${statusText}</span>`
+            : `<span class="bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-full text-xs font-medium border border-emerald-100">${statusText}</span>`;
+        if (cloudSyncStatusDashboard) cloudSyncStatusDashboard.innerHTML = errorHtml;
+        if (cloudSyncStatusHistory) cloudSyncStatusHistory.innerHTML = errorHtml;
+    };
+
+    // -----------------------------------------
+    // Main UI Updater function (Dashboard + Global Stats)
+    // -----------------------------------------
+
+    // Update UI Summary & List rendering logic
+    const updateUI = () => {
+        let totalIncome = 0;
+        let totalExpense = 0;
+
+        // Calculate Totals based on ALL transactions
+        transactions.forEach((trx) => {
+            if (trx.type === 'Pemasukan') totalIncome += parseFloat(trx.amount);
+            else totalExpense += parseFloat(trx.amount);
+        });
+
+        document.getElementById('balance').textContent = formatCurrency(totalIncome - totalExpense);
+        document.getElementById('balance').className = `text-4xl font-extrabold mb-8 tracking-tight ${totalIncome - totalExpense < 0 ? 'text-rose-500' : 'text-slate-800'}`;
+        document.getElementById('totalIncome').textContent = formatCurrency(totalIncome);
+        document.getElementById('totalExpense').textContent = formatCurrency(totalExpense);
+
+        localStorage.setItem('transactions', JSON.stringify(transactions));
+
+        renderDashboardList();
+        renderHistoryList();
+    };
+
+    // 1. Dashboard List Render (Latest 5, No Filters)
+    const renderDashboardList = () => {
+        recentTransactionList.innerHTML = '';
+        if (transactions.length === 0) {
+            recentTransactionList.innerHTML = `<div class="text-center py-8 text-slate-500 text-sm">Belum ada transaksi dicatat.</div>`;
+            return;
+        }
+
+        // Sort by newest, take top 5
+        const dashTx = [...transactions].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 5);
+
+        dashTx.forEach((trx) => {
+            const isIncome = trx.type === 'Pemasukan';
+            const amountClass = isIncome ? 'text-emerald-500' : 'text-rose-500';
+            const icon = isIncome
+                ? `<svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>`
+                : `<svg class="w-5 h-5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"></path></svg>`;
+
+            const profInitial = trx.profile ? trx.profile.charAt(0).toUpperCase() : '?';
+            const profileBadge = `<span class="inline-flex items-center justify-center h-4 w-4 rounded-full bg-slate-200 text-[9px] font-bold text-slate-600 mr-1" title="Dicatat oleh ${trx.profile || 'Utama'}">${profInitial}</span>`;
+
+            recentTransactionList.innerHTML += `
+                <div class="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl border border-slate-100 shadow-sm transition-all hover:shadow-md animate-slide-up">
+                    <div class="flex items-center space-x-3">
+                        <div class="p-1.5 bg-white rounded-lg shadow-sm border border-slate-100">${icon}</div>
+                        <div>
+                            <p class="font-semibold text-slate-800 text-sm">${trx.category}</p>
+                            <p class="text-[11px] text-slate-500 flex items-center">${profileBadge} ${formatDate(trx.date)}</p>
+                        </div>
+                    </div>
+                    <div class="font-bold text-sm ${amountClass}">
+                        ${isIncome ? '+' : '-'}${formatCurrency(trx.amount)}
+                    </div>
+                </div>`;
+        });
+    };
+
+    // 2. History List Render (Full, Filtered, Searched)
+    const renderHistoryList = () => {
+        historyTransactionList.innerHTML = '';
+
+        // Apply Filters
+        let processedTransactions = transactions.filter(trx => {
+            // Type Filter
+            if (currentFilter !== 'All' && trx.type !== currentFilter) return false;
+
+            // Search Filter
+            if (currentSearch) {
+                const searchStr = `${trx.category} ${trx.note}`.toLowerCase();
+                if (!searchStr.includes(currentSearch)) return false;
+            }
+
+            // Date Filter
+            if (currentDateFilter && trx.date !== currentDateFilter) return false;
+
+            return true;
+        });
+
+        // Apply Sort
+        processedTransactions.sort((a, b) => {
+            if (currentSort === 'Terbaru') return new Date(b.timestamp) - new Date(a.timestamp);
+            if (currentSort === 'Terlama') return new Date(a.timestamp) - new Date(b.timestamp);
+            if (currentSort === 'Tertinggi') return b.amount - a.amount;
+            if (currentSort === 'Terendah') return a.amount - b.amount;
+            return 0;
+        });
+
+        updateChart(processedTransactions); // Update chart based on filtered items
+
+        if (processedTransactions.length === 0) {
+            historyTransactionList.innerHTML = `
+                <div class="text-center py-12 px-4 animate-fade-in">
+                    <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                    </div>
+                    <h3 class="font-semibold text-slate-700 mb-1">Tidak ada transaksi Ditemukan</h3>
+                    <p class="text-slate-500 text-sm">Coba sesuaikan filter/pencarian Anda.</p>
+                </div>
+            `;
+            return;
+        }
+
+        processedTransactions.forEach((trx) => {
+            const isIncome = trx.type === 'Pemasukan';
+            const amountClass = isIncome ? 'text-emerald-500' : 'text-rose-500';
+            const icon = isIncome
+                ? `<svg class="w-6 h-6 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>`
+                : `<svg class="w-6 h-6 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"></path></svg>`;
+
+            const profInitial = trx.profile ? trx.profile.charAt(0).toUpperCase() : '?';
+            const profileBadge = `<span class="inline-flex items-center justify-center h-4 w-4 rounded-full bg-slate-200 text-[9px] font-bold text-slate-600 mr-1" title="Dicatat oleh ${trx.profile || 'Utama'}">${profInitial}</span>`;
+
+            const div = document.createElement('div');
+            div.className = 'flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100 shadow-sm transition-all hover:shadow-md animate-slide-up';
+            div.innerHTML = `
+                <div class="flex items-center space-x-4">
+                    <div class="p-2 bg-white rounded-lg shadow-sm border border-slate-100">
+                        ${icon}
+                    </div>
+                    <div>
+                        <p class="font-semibold text-slate-800">${trx.category}</p>
+                        <p class="text-xs text-slate-500 flex items-center">${profileBadge} ${formatDate(trx.date)} • ${trx.note || '-'}</p>
+                    </div>
+                </div>
+                <div class="font-bold ${amountClass}">
+                    ${isIncome ? '+' : '-'}${formatCurrency(trx.amount)}
+                </div>
+            `;
+            historyTransactionList.appendChild(div);
+        });
+    };
+
+    // -----------------------------------------
+    // Chart.js Configuration
+    // -----------------------------------------
+    const updateChart = (dataSubset) => {
+        const ctx = document.getElementById('financeChart');
+        if (!ctx) return;
+
+        // Aggregate by date
+        const grouped = {};
+        dataSubset.forEach(trx => {
+            if (!grouped[trx.date]) grouped[trx.date] = { inc: 0, exp: 0 };
+            if (trx.type === 'Pemasukan') grouped[trx.date].inc += trx.amount;
+            else grouped[trx.date].exp += trx.amount;
+        });
+
+        // Sort dates chronologically
+        const sortedDates = Object.keys(grouped).sort();
+        const incomeData = sortedDates.map(d => grouped[d].inc);
+        const expenseData = sortedDates.map(d => grouped[d].exp);
+        const labels = sortedDates.map(d => {
+            const dateObj = new Date(d);
+            return `${dateObj.getDate()} ${dateObj.toLocaleString('id-ID', { month: 'short' })}`; // e.g. 5 Des
+        });
+
+        if (financeChartInstance) {
+            financeChartInstance.destroy();
+        }
+
+        financeChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels.length ? labels : ['Belum ada data'],
+                datasets: [
+                    {
+                        label: 'Pemasukan',
+                        data: incomeData.length ? incomeData : [0],
+                        borderColor: '#10b981', // emerald-500
+                        backgroundColor: '#10b98133',
+                        tension: 0.4,
+                        fill: true,
+                        borderWidth: 2
+                    },
+                    {
+                        label: 'Pengeluaran',
+                        data: expenseData.length ? expenseData : [0],
+                        borderColor: '#f43f5e', // rose-500
+                        backgroundColor: '#f43f5e33',
+                        tension: 0.4,
+                        fill: true,
+                        borderWidth: 2
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: { usePointStyle: true, boxWidth: 8 }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        callbacks: {
+                            label: function (context) {
+                                let label = context.dataset.label || '';
+                                if (label) label += ': ';
+                                if (context.parsed.y !== null) {
+                                    label += formatCurrency(context.parsed.y);
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { borderDash: [4, 4], color: '#f1f5f9' },
+                        ticks: {
+                            callback: function (value) {
+                                if (value >= 1000000) return 'Rp ' + (value / 1000000).toFixed(1) + 'jt';
+                                if (value >= 1000) return 'Rp ' + (value / 1000).toFixed(0) + 'k';
+                                return 'Rp ' + value;
+                            }
+                        }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                },
+                interaction: {
+                    mode: 'nearest',
+                    axis: 'x',
+                    intersect: false
+                }
+            }
+        });
+    }
+
+    // -----------------------------------------
+    // Network Logic (Sync / Fetch)
+    // -----------------------------------------
+
+    const setCloudStatus = (status, type) => {
+        if (status === 'loading') {
+            cloudSyncStatus.innerHTML = `<svg class="animate-spin -ml-1 mr-2 h-3 w-3 text-amber-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Memeriksa Data Cloud...`;
+            cloudSyncStatus.className = 'flex items-center text-xs font-medium bg-amber-50 text-amber-600 px-3 py-1.5 rounded-full';
+        } else if (status === 'synced') {
+            cloudSyncStatus.innerHTML = `<svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg> Tersinkron Cloud`;
+            cloudSyncStatus.className = 'flex items-center text-xs font-medium bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-full';
+        } else if (status === 'error' || status === 'offline') {
+            let msg = type === 'nosheet' ? 'Lokal Saja (Sheet Belum Diatur)' : 'Mode Offline / Error Cloud';
+            cloudSyncStatus.innerHTML = `<svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> ${msg}`;
+            cloudSyncStatus.className = 'flex items-center text-xs font-medium bg-rose-50 text-rose-600 px-3 py-1.5 rounded-full';
+        }
+    }
+
+    // Fetch All Data from Sheets on Load (Using JSONP due to Google Apps Script CORS)
+    const fetchFromSheets = () => {
+        if (!userSheetUrl) {
+            setCloudStatus('error', 'nosheet');
+            updateUI(); // just render local
+            return;
+        }
+
+        setCloudStatus('loading');
+        transactionList.classList.add('hidden');
+        listLoading.classList.remove('hidden');
+
+        // Setup JSONP callback
+        const callbackName = 'jsonpCallback_' + Math.round(100000 * Math.random());
+        window[callbackName] = function (data) {
+            if (data.result === 'success' && data.data) {
+                transactions = data.data; // Overwrite local with cloud data
+                setCloudStatus('synced');
+
+                let owner = data.ownerEmail || 'Pengguna Tidak Diketahui';
+                let doc = data.docName || 'Spreadsheet Terhubung';
+
+                let username = owner.includes('@') ? owner.split('@')[0] : owner;
+                if (username) username = username.charAt(0).toUpperCase() + username.slice(1);
+
+                if (userAccountName) userAccountName.textContent = username;
+                if (sheetDocName) sheetDocName.textContent = doc;
+
+                localStorage.setItem('sheetOwnerName', username);
+                localStorage.setItem('sheetDocName', doc);
+            } else {
+                console.error("Cloud fetch resulted in error or empty.", data);
+                setCloudStatus('error');
+            }
+
+            // Cleanup
+            delete window[callbackName];
+            document.body.removeChild(script);
+            listLoading.classList.add('hidden');
+            transactionList.classList.remove('hidden');
+            updateUI();
+        };
+
+        // Create script tag for JSONP
+        const script = document.createElement('script');
+        script.src = `${MASTER_SCRIPT_URL}?sheetUrl=${encodeURIComponent(userSheetUrl)}&callback=${callbackName}`;
+
+        script.onerror = function () {
+            console.error('Error fetching from sheets (Network or CORS).');
+            setCloudStatus('error');
+            delete window[callbackName];
+            listLoading.classList.add('hidden');
+            transactionList.classList.remove('hidden');
+            updateUI();
+        };
+
+        document.body.appendChild(script);
+    };
+
+    // Sync 1 Transaction to Sheets (POST)
+    const syncToSheets = async (data) => {
+        if (!userSheetUrl) return true; // Lokal saja
+
+        const payload = {
+            sheetUrl: userSheetUrl,
+            transaction: data
+        };
+
+        try {
+            setCloudStatus('loading');
+            const response = await fetch(MASTER_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            // no-cors will not return actual readable JSON response, but it works for simple insertion
+            setTimeout(() => setCloudStatus('synced'), 1000);
+            return true;
+        } catch (error) {
+            console.error('Error syncing to sheets:', error);
+            setCloudStatus('error');
+            return false;
+        }
+    };
+
+    // -----------------------------------------
+    // Form and Settings Handling
+    // -----------------------------------------
+
+    // Handle Form Submit
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        // Grab values from Radio and inputs
+        const type = document.querySelector('input[name="type"]:checked').value;
+        const amount = amountVal.value; // Hidden raw numeric value
+        const category = document.getElementById('category').value;
+        const date = document.getElementById('date').value;
+        const note = document.getElementById('note').value;
+
+        if (!amount || !category || !date) {
+            alert('Harap isi nominal, kategori, dan tanggal.');
+            return;
+        }
+
+        const btnText = submitBtn.innerHTML;
+        submitBtn.innerHTML = `<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Menyimpan...`;
+        submitBtn.disabled = true;
+
+        const activeProf = profiles.find(p => p.id === activeProfileId) || profiles[0];
+
+        const newTransaction = {
+            id: Date.now().toString(),
+            date,
+            type,
+            category: category.trim(),
+            amount: parseFloat(amount),
+            note: note.trim(),
+            timestamp: new Date().toISOString(),
+            profile: activeProf.name // Append local profile
+        };
+
+        // Attempt google sheet sync
+        await syncToSheets(newTransaction);
+
+        // Always save locally to keep UI working offline
+        transactions.push(newTransaction);
+
+        // Update UI
+        updateUI();
+
+        // Reset form
+        form.reset();
+        amountDisplay.value = '';
+        amountVal.value = '';
+        document.getElementById('date').valueAsDate = new Date(); // Reset to today
+
+        // Reset radio back to Expense (default)
+        document.getElementById('typeExpense').checked = true;
+
+        submitBtn.innerHTML = btnText;
+        submitBtn.disabled = false;
+    });
+
+    // --- Settings Modal Logic --- //
+    const openModal = () => {
+        sheetUrlInput.value = userSheetUrl;
+        settingsStatusMsg.classList.add('hidden');
+        settingsModal.classList.remove('hidden');
+        setTimeout(() => {
+            settingsModal.classList.remove('opacity-0');
+            document.getElementById('settingsModalContent').classList.remove('scale-95');
+        }, 10);
+    };
+
+    const closeModal = () => {
+        settingsModal.classList.add('opacity-0');
+        document.getElementById('settingsModalContent').classList.add('scale-95');
+        setTimeout(() => {
+            settingsModal.classList.add('hidden');
+        }, 300);
+    };
+
+    openSettingsBtn.addEventListener('click', openModal);
+    closeSettingsBtn.addEventListener('click', closeModal);
+
+    // --- Profiles Management Logic --- //
+    const renderProfiles = () => {
+        profilesList.innerHTML = '';
+        profiles.forEach(prof => {
+            const isActive = prof.id === activeProfileId;
+            const div = document.createElement('div');
+            div.className = `flex justify-between items-center p-3 rounded-xl border cursor-pointer transition-all ${isActive ? 'bg-indigo-50 border-indigo-200' : 'bg-white border-slate-100 hover:border-slate-300'}`;
+            div.onclick = () => {
+                activeProfileId = prof.id;
+                localStorage.setItem('activeProfileId', activeProfileId);
+                updateActiveProfileIcon();
+                renderProfiles();
+                // Optional: Auto close on selection
+                closeProfileModal();
+            };
+
+            div.innerHTML = `
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 rounded-full ${isActive ? 'bg-indigo-600' : 'bg-slate-300'} text-white font-bold flex items-center justify-center text-sm shadow-sm">${prof.name.charAt(0).toUpperCase()}</div>
+                    <span class="font-medium ${isActive ? 'text-indigo-900' : 'text-slate-700'}">${prof.name}</span>
+                </div>
+                ${isActive ? '<svg class="w-5 h-5 text-indigo-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>' : ''}
+            `;
+            profilesList.appendChild(div);
+        });
+    };
+
+    const updateActiveProfileIcon = () => {
+        const activeProf = profiles.find(p => p.id === activeProfileId) || profiles[0];
+        if (activeProfileIndicator) {
+            activeProfileIndicator.textContent = activeProf.name.charAt(0).toUpperCase();
+            activeProfileIndicator.title = `Profil Aktif: ${activeProf.name}`;
+        }
+    };
+
+    const openProfileModal = () => {
+        if (window.innerWidth < 1024) toggleSidebar(); // Close sidebar if mobile
+        renderProfiles();
+        profileModal.classList.remove('hidden');
+        setTimeout(() => {
+            profileModal.classList.remove('opacity-0');
+            document.getElementById('profileModalContent').classList.remove('scale-95');
+        }, 10);
+    };
+
+    const closeProfileModal = () => {
+        profileModal.classList.add('opacity-0');
+        document.getElementById('profileModalContent').classList.add('scale-95');
+        setTimeout(() => {
+            profileModal.classList.add('hidden');
+        }, 300);
+    };
+
+    if (menuProfiles) menuProfiles.addEventListener('click', (e) => { e.preventDefault(); openProfileModal(); });
+    if (activeProfileIndicator) activeProfileIndicator.addEventListener('click', openProfileModal);
+    if (closeProfileBtn) closeProfileBtn.addEventListener('click', closeProfileModal);
+
+    if (addProfileForm) addProfileForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = newProfileName.value.trim();
+        if (name) {
+            profiles.push({ id: Date.now().toString(), name: name });
+            localStorage.setItem('profiles', JSON.stringify(profiles));
+            newProfileName.value = '';
+            renderProfiles();
+        }
+    });
+
+    // --- Settings Modal Saving --- //
+    saveSettingsBtn.addEventListener('click', () => {
+        const inputUrl = sheetUrlInput.value.trim();
+
+        if (inputUrl && !inputUrl.includes('docs.google.com/spreadsheets')) {
+            settingsStatusMsg.textContent = 'Gagal: Link Spreadsheet tidak valid.';
+            settingsStatusMsg.className = 'text-xs text-center font-medium text-rose-600 mt-2 block';
+            return;
+        }
+
+        const urlChanged = userSheetUrl !== inputUrl;
+        userSheetUrl = inputUrl;
+        localStorage.setItem('userSheetUrl', userSheetUrl);
+
+        settingsStatusMsg.textContent = 'Berhasil! Data akan dimuat.';
+        settingsStatusMsg.className = 'text-xs text-center font-medium text-emerald-600 mt-2 block';
+        setTimeout(() => {
+            closeModal();
+            if (urlChanged) {
+                fetchFromSheets(); // Fetch new data immediately
+            }
+        }, 1200);
+    });
+
+    // Initialize date to today
+    document.getElementById('date').valueAsDate = new Date();
+
+    // Restore Account Info from local storage initially
+    const savedOwner = localStorage.getItem('sheetOwnerName');
+    const savedDoc = localStorage.getItem('sheetDocName');
+    if (savedOwner && userAccountName) userAccountName.textContent = savedOwner;
+    if (savedDoc && sheetDocName) sheetDocName.textContent = savedDoc;
+
+    // Load active profile icon on start
+    updateActiveProfileIcon();
+
+    // Initial Load
+    fetchFromSheets(); // Will try to fetch from cloud. If no URL, updates local only.
+});
