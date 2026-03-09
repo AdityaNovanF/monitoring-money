@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Monitoring Money</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="assets/logo-mm.png">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js CDN -->
@@ -53,13 +55,15 @@
     <!-- Sidebar Navigation -->
     <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 bg-white border-r border-slate-100 shadow-2xl lg:shadow-none lg:static lg:translate-x-0 transform -translate-x-full transition-transform duration-300 flex flex-col">
         <!-- Sidebar Header (Logo) -->
-        <div class="h-16 flex items-center px-6 border-b border-slate-100">
-            <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-primary to-secondary flex items-center justify-center shadow-lg shadow-indigo-200 mr-3">
-                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <div class="h-32 flex items-center justify-center border-b border-slate-100 relative bg-white">
+            <div class="flex items-center justify-center h-full w-full">
+                <img src="assets/logo-mm.png" alt="Logo" class="h-28 w-auto object-contain" onerror="this.onerror=null; this.parentElement.querySelector('.fallback-logo').classList.remove('hidden'); this.style.display='none';">
+                <div class="fallback-logo hidden h-16 w-16 bg-gradient-to-tr from-primary to-secondary flex items-center justify-center shadow-lg shadow-indigo-200 rounded-full">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
             </div>
-            <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600 tracking-tight">Monitoring Money</h1>
             <!-- Close Sidebar Btn (Mobile) -->
-            <button id="closeSidebarBtn" class="lg:hidden ml-auto p-2 text-slate-400 hover:text-slate-600 focus:outline-none rounded-lg hover:bg-slate-100 transition-colors">
+            <button id="closeSidebarBtn" class="lg:hidden absolute right-4 p-2 text-slate-400 hover:text-slate-600 focus:outline-none rounded-lg hover:bg-slate-100 transition-colors">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
         </div>
@@ -83,11 +87,15 @@
 
             <!-- Nav Group 2 -->
             <div>
-                <p class="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Kolaborasi</p>
+                <p class="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Sistem & Kolaborasi</p>
                 <nav class="space-y-1">
-                    <a href="#" id="menuProfiles" class="flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-xl font-medium transition-colors">
+                    <a href="#" id="menuProfiles" class="sidebar-link flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-xl font-medium transition-colors">
                         <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                         Manajemen Profil
+                    </a>
+                    <a href="#" id="menuSettings" class="sidebar-link flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-xl font-medium transition-colors">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        Pengaturan Cloud
                     </a>
                 </nav>
             </div>
@@ -103,7 +111,7 @@
     <div class="flex-1 flex flex-col min-w-0 transition-all duration-300 relative">
         
         <!-- Header / Navbar -->
-        <header class="glass sticky top-0 z-30 px-4 md:px-8 py-4 flex justify-between items-center shadow-sm">
+        <header class="glass sticky top-0 z-30 px-4 md:px-8 py-4 flex justify-between items-center shadow-sm relative">
             <div class="flex items-center">
                 <!-- Hamburger Menu Btn (Mobile) -->
                 <button id="openSidebarBtn" class="lg:hidden p-2 mr-3 text-slate-500 hover:text-slate-800 focus:outline-none rounded-lg hover:bg-slate-100 transition-colors">
@@ -111,6 +119,11 @@
                 </button>
                 <h2 id="headerTitle" class="text-lg font-bold text-slate-800 hidden sm:block tracking-tight">Dashboard Overview</h2>
             </div>
+            
+            <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 lg:hidden">
+                <img src="assets/logo-mm.png" alt="Logo" class="h-16 w-auto object-contain">
+            </div>
+
             <div class="flex items-center space-x-4">
                 <!-- Account Info -->
                 <div class="hidden sm:block text-right">
@@ -118,12 +131,7 @@
                     <p id="sheetDocName" class="text-xs text-slate-400">Belum Terhubung</p>
                 </div>
                 <!-- Profile Avatar Indicator -->
-                <div id="activeProfileIndicator" class="h-9 w-9 rounded-full bg-slate-200 border-2 border-white shadow-sm flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-indigo-100 transition-all font-bold text-slate-600 text-sm" title="Profil Aktif">?</div>
-                
-                <!-- Settings Button -->
-                <button id="openSettingsBtn" class="p-2 text-slate-400 hover:text-slate-600 transition-colors rounded-full hover:bg-slate-100 focus:outline-none" title="Pengaturan Spreadsheet">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                </button>
+                <div id="activeProfileIndicator" class="h-9 w-9 rounded-full bg-slate-200 border-2 border-white shadow-sm flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-indigo-100 transition-all font-bold text-slate-600 text-sm" title="Kelola Profil">?</div>
             </div>
         </header>
 
@@ -364,76 +372,68 @@
                 </section>
             </div>
 
+            <!-- ================= VIEW: PROFILES ================= -->
+            <div id="viewProfiles" class="space-y-8 hidden opacity-0 transition-opacity duration-300">
+                <section class="bg-white rounded-3xl p-6 md:p-8 shadow-xl shadow-slate-200/50 border border-slate-100 flex flex-col min-h-[500px]">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-800">Manajemen Profil Pengguna</h3>
+                            <p class="text-sm text-slate-500 mt-1">Kelola anggota keluarga atau profil yang menggunakan aplikasi ini.</p>
+                        </div>
+                    </div>
+
+                    <!-- Add Profile Form -->
+                    <div class="mb-8 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Tambah Profil Baru</label>
+                        <form id="addProfileFormPage" class="flex gap-2">
+                            <input type="text" id="newProfileNamePage" placeholder="Nama Anggota (misal: Istri)" required class="flex-1 bg-white border border-slate-200 text-slate-800 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition duration-200 shadow-sm">
+                            <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl transition-all shadow-md font-medium text-sm flex items-center">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                                Tambah
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Profiles List Container -->
+                    <div id="profilesListPage" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        <!-- Populated by JS -->
+                    </div>
+                </section>
+            </div>
+
+            <!-- ================= VIEW: SETTINGS ================= -->
+            <div id="viewSettings" class="space-y-8 hidden opacity-0 transition-opacity duration-300">
+                <section class="bg-white rounded-3xl p-6 md:p-8 shadow-xl shadow-slate-200/50 border border-slate-100 max-w-2xl mx-auto">
+                    <h3 class="text-xl font-bold text-slate-800 mb-6 flex items-center">
+                        <svg class="w-6 h-6 mr-3 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        Pengaturan Spreadsheet
+                    </h3>
+                    
+                    <div class="mb-8 p-5 bg-indigo-50 rounded-2xl border border-indigo-100">
+                        <p class="text-sm text-indigo-900 font-semibold mb-3">Langkah Sinkronisasi Cloud:</p>
+                        <ol class="text-xs text-indigo-700 list-decimal list-inside space-y-2 leading-relaxed">
+                            <li>Buat <a href="https://sheets.google.com/create" target="_blank" class="text-indigo-600 font-bold hover:underline">Google Sheet Baru</a>.</li>
+                            <li>Klik <b>Share (Bagikan)</b> di pojok kanan atas Sheet.</li>
+                            <li>Ubah Hak Akses Umum menjadi <b>"Anyone with the link"</b>.</li>
+                            <li>Pilih peran sebagai <b>Editor</b>.</li>
+                            <li>Salin link Sheet tersebut dan tempel di bawah ini.</li>
+                        </ol>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Link Google Spreadsheet</label>
+                            <input type="url" id="sheetUrlInputPage" placeholder="https://docs.google.com/spreadsheets/d/..." class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition duration-200 text-sm shadow-sm">
+                        </div>
+                        <button id="saveSettingsBtnPage" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-4 px-6 rounded-xl shadow-lg shadow-slate-300 transition-all duration-200 transform hover:-translate-y-0.5">
+                            Simpan & Hubungkan Sekarang
+                        </button>
+                        <div id="settingsStatusMsgPage" class="text-sm text-center font-bold hidden"></div>
+                    </div>
+                </section>
+            </div>
+
         </main>    </div>
-
-    <!-- Profile Management Modal -->
-    <div id="profileModal" class="fixed inset-0 z-[100] hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
-        <div class="bg-white rounded-3xl p-6 md:p-8 shadow-2xl w-full max-w-md transform scale-95 transition-transform duration-300" id="profileModalContent">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-bold text-slate-800 flex items-center">
-                    <svg class="w-5 h-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                    Pilih Profil Aktif
-                </h3>
-                <button id="closeProfileBtn" class="text-slate-400 hover:text-slate-600 focus:outline-none">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </div>
-            
-            <p class="text-sm text-slate-500 mb-4">Pilih profil untuk mencatat transaksi atas nama pengguna tersebut.</p>
-
-            <!-- Profiles List Container -->
-            <div id="profilesList" class="space-y-3 mb-6 max-h-[40vh] overflow-y-auto">
-                <!-- Populated by JS -->
-            </div>
-
-            <hr class="border-slate-100 mb-4">
-
-            <!-- Add Profile Form -->
-            <form id="addProfileForm" class="flex gap-2">
-                <input type="text" id="newProfileName" placeholder="Tambah Anggota (misal: Istri)" required class="flex-1 bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition duration-200">
-                <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white p-2.5 rounded-xl transition-colors shadow-sm">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Settings Modal -->
-    <div id="settingsModal" class="fixed inset-0 z-[100] hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
-        <div class="bg-white rounded-3xl p-6 md:p-8 shadow-2xl w-full max-w-md transform scale-95 transition-transform duration-300" id="settingsModalContent">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-bold text-slate-800 flex items-center">
-                    <svg class="w-5 h-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                    Pengaturan Spreadsheet
-                </h3>
-                <button id="closeSettingsBtn" class="text-slate-400 hover:text-slate-600 focus:outline-none">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </div>
-            
-            <div class="mb-6 space-y-3">
-                <p class="text-sm text-slate-600">
-                    Kini data Anda bisa otomatis tersimpan & tersinkronisasi. Ikuti 3 langkah mudah ini:
-                </p>
-                <ol class="text-sm text-slate-600 list-decimal list-inside space-y-1">
-                    <li>Buat <a href="https://sheets.google.com/create" target="_blank" class="text-indigo-600 font-medium hover:underline">Google Sheet Baru</a> kosong.</li>
-                    <li>Klik <b>Share (Bagikan)</b> di pojok kanan atas Sheet.</li>
-                    <li>Ubah Hak Akses Umum menjadi <b>"Siapa saja yang memiliki link"</b> <i>(Anyone with the link)</i> dan pilih peran sebagai <b>Editor</b>.</li>
-                </ol>
-            </div>
-
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Link Google Sheet Anda</label>
-                    <input type="url" id="sheetUrlInput" placeholder="https://docs.google.com/spreadsheets/d/..." class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition duration-200 text-sm">
-                </div>
-                <button id="saveSettingsBtn" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-medium py-3 px-4 rounded-xl shadow-lg shadow-slate-300 transition-all duration-200 transform hover:-translate-y-0.5">
-                    Simpan & Hubungkan
-                </button>
-                <p id="settingsStatusMsg" class="text-xs text-center font-medium hidden"></p>
-            </div>
-        </div>
-    </div>
 
     <!-- App Script -->
     <script src="script.js"></script>

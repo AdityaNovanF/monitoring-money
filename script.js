@@ -1,11 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- Developer's Master Apps Script URL --- //
-    const MASTER_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzdhJBvNkp1DMGimriV99RVFaIJzsz2KJzJ5IC8P1u2TIUCH358eFqGSbXzyGZtiAiUHQ/exec';
+    const MASTER_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby3RA0dnaxppGCVdIlwijUUjAmGlI-s0neGdaGV2oLyYfcz4xoqU3zkw4LxzcRbQlhEnw/exec';
 
     // UI Elements
     const form = document.getElementById('transactionForm');
-    const transactionList = document.getElementById('transactionList');
-    const listLoading = document.getElementById('listLoading');
     const totalIncomeEl = document.getElementById('totalIncome');
     const totalExpenseEl = document.getElementById('totalExpense');
     const balanceEl = document.getElementById('balance');
@@ -21,6 +19,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeSidebarBtn = document.getElementById('closeSidebarBtn');
     const menuDashboard = document.getElementById('menuDashboard');
     const menuHistory = document.getElementById('menuHistory');
+    const menuProfiles = document.getElementById('menuProfiles');
+    const menuSettings = document.getElementById('menuSettings');
     const headerTitle = document.getElementById('headerTitle');
 
     // Views
@@ -29,12 +29,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Profile UI Elements
     const activeProfileIndicator = document.getElementById('activeProfileIndicator');
-    const profileModal = document.getElementById('profileModal');
-    const menuProfiles = document.getElementById('menuProfiles');
-    const closeProfileBtn = document.getElementById('closeProfileBtn');
-    const profilesList = document.getElementById('profilesList');
-    const addProfileForm = document.getElementById('addProfileForm');
-    const newProfileName = document.getElementById('newProfileName');
+    const profilesListPage = document.getElementById('profilesListPage');
+    const addProfileFormPage = document.getElementById('addProfileFormPage');
+    const newProfileNamePage = document.getElementById('newProfileNamePage');
 
     // New UI Elements
     const amountDisplay = document.getElementById('amountDisplay');
@@ -57,12 +54,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Settings
     let userSheetUrl = localStorage.getItem('userSheetUrl') || '';
-    const settingsModal = document.getElementById('settingsModal');
-    const openSettingsBtn = document.getElementById('openSettingsBtn');
-    const closeSettingsBtn = document.getElementById('closeSettingsBtn');
-    const saveSettingsBtn = document.getElementById('saveSettingsBtn');
-    const sheetUrlInput = document.getElementById('sheetUrlInput');
-    const settingsStatusMsg = document.getElementById('settingsStatusMsg');
+    const sheetUrlInputPage = document.getElementById('sheetUrlInputPage');
+    const saveSettingsBtnPage = document.getElementById('saveSettingsBtnPage');
+    const settingsStatusMsgPage = document.getElementById('settingsStatusMsgPage');
 
     // State Variables
     let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
@@ -116,37 +110,66 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Navigation / View Switching
     const switchView = (viewName) => {
-        if (window.innerWidth < 1024) toggleSidebar(); // auto close mobile sidebar
-
-        if (viewName === 'dashboard') {
-            viewHistory.classList.add('hidden', 'opacity-0');
-            viewDashboard.classList.remove('hidden');
-            setTimeout(() => viewDashboard.classList.remove('opacity-0'), 10);
-
-            menuDashboard.classList.add('bg-indigo-50', 'text-indigo-700');
-            menuDashboard.classList.remove('text-slate-600');
-            menuHistory.classList.remove('bg-indigo-50', 'text-indigo-700');
-            menuHistory.classList.add('text-slate-600');
-
-            if (headerTitle) headerTitle.textContent = "Dashboard Overview";
-            renderDashboardList();
-        } else if (viewName === 'history') {
-            viewDashboard.classList.add('hidden', 'opacity-0');
-            viewHistory.classList.remove('hidden');
-            setTimeout(() => viewHistory.classList.remove('opacity-0'), 10);
-
-            menuHistory.classList.add('bg-indigo-50', 'text-indigo-700');
-            menuHistory.classList.remove('text-slate-600');
-            menuDashboard.classList.remove('bg-indigo-50', 'text-indigo-700');
-            menuDashboard.classList.add('text-slate-600');
-
-            if (headerTitle) headerTitle.textContent = "Riwayat & Grafik";
-            renderHistoryList();
+        if (window.innerWidth < 1024) {
+            // Check if sidebar is open before trying to close
+            if (!sidebar.classList.contains('-translate-x-full')) toggleSidebar();
         }
+
+        // Hide all views
+        [viewDashboard, viewHistory, document.getElementById('viewProfiles'), document.getElementById('viewSettings')].forEach(v => {
+            if (v) v.classList.add('hidden', 'opacity-0');
+        });
+
+        // Reset all menu items
+        [menuDashboard, menuHistory, menuProfiles, menuSettings].forEach(m => {
+            if (m) {
+                m.classList.remove('bg-indigo-50', 'text-indigo-700');
+                m.classList.add('text-slate-600');
+            }
+        });
+
+        const activeMenu = {
+            'dashboard': menuDashboard,
+            'history': menuHistory,
+            'profiles': menuProfiles,
+            'settings': menuSettings
+        }[viewName];
+
+        const activeView = {
+            'dashboard': viewDashboard,
+            'history': viewHistory,
+            'profiles': document.getElementById('viewProfiles'),
+            'settings': document.getElementById('viewSettings')
+        }[viewName];
+
+        if (activeView) {
+            activeView.classList.remove('hidden');
+            setTimeout(() => activeView.classList.remove('opacity-0'), 10);
+        }
+
+        if (activeMenu) {
+            activeMenu.classList.add('bg-indigo-50', 'text-indigo-700');
+            activeMenu.classList.remove('text-slate-600');
+        }
+
+        if (headerTitle) {
+            headerTitle.textContent = {
+                'dashboard': 'Dashboard Overview',
+                'history': 'Riwayat & Grafik',
+                'profiles': 'Manajemen Profil',
+                'settings': 'Pengaturan Cloud'
+            }[viewName] || 'Monitoring Money';
+        }
+
+        if (viewName === 'dashboard') renderDashboardList();
+        if (viewName === 'history') renderHistoryList();
+        if (viewName === 'profiles') renderProfilesPage();
     };
 
     if (menuDashboard) menuDashboard.addEventListener('click', (e) => { e.preventDefault(); switchView('dashboard'); });
     if (menuHistory) menuHistory.addEventListener('click', (e) => { e.preventDefault(); switchView('history'); });
+    if (menuProfiles) menuProfiles.addEventListener('click', (e) => { e.preventDefault(); switchView('profiles'); });
+    if (menuSettings) menuSettings.addEventListener('click', (e) => { e.preventDefault(); switchView('settings'); });
     if (viewAllBtn) viewAllBtn.addEventListener('click', () => switchView('history'));
 
     // Currency Masking on Amount Input
@@ -482,17 +505,31 @@ document.addEventListener('DOMContentLoaded', () => {
     // -----------------------------------------
 
     const setCloudStatus = (status, type) => {
-        if (status === 'loading') {
-            cloudSyncStatus.innerHTML = `<svg class="animate-spin -ml-1 mr-2 h-3 w-3 text-amber-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Memeriksa Data Cloud...`;
-            cloudSyncStatus.className = 'flex items-center text-xs font-medium bg-amber-50 text-amber-600 px-3 py-1.5 rounded-full';
-        } else if (status === 'synced') {
-            cloudSyncStatus.innerHTML = `<svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg> Tersinkron Cloud`;
-            cloudSyncStatus.className = 'flex items-center text-xs font-medium bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-full';
-        } else if (status === 'error' || status === 'offline') {
-            let msg = type === 'nosheet' ? 'Lokal Saja (Sheet Belum Diatur)' : 'Mode Offline / Error Cloud';
-            cloudSyncStatus.innerHTML = `<svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> ${msg}`;
-            cloudSyncStatus.className = 'flex items-center text-xs font-medium bg-rose-50 text-rose-600 px-3 py-1.5 rounded-full';
-        }
+        const loadingHtml = `<svg class="animate-spin -ml-1 mr-2 h-3 w-3 text-amber-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Memeriksa Data Cloud...`;
+        const loadingClass = 'flex items-center text-xs font-medium bg-amber-50 text-amber-600 px-3 py-1.5 rounded-full';
+        
+        const syncedHtml = `<svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg> Tersinkron Cloud`;
+        const syncedClass = 'flex items-center text-xs font-medium bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-full';
+        
+        let msg = type === 'nosheet' ? 'Lokal Saja' : 'Offline / Error';
+        const errorHtml = `<svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> ${msg}`;
+        const errorClass = 'flex items-center text-xs font-medium bg-rose-50 text-rose-600 px-3 py-1.5 rounded-full';
+
+        const targets = [cloudSyncStatusDashboard, cloudSyncStatusHistory];
+        
+        targets.forEach(el => {
+            if (!el) return;
+            if (status === 'loading') {
+                el.innerHTML = loadingHtml;
+                el.className = loadingClass;
+            } else if (status === 'synced') {
+                el.innerHTML = syncedHtml;
+                el.className = syncedClass;
+            } else if (status === 'error' || status === 'offline') {
+                el.innerHTML = errorHtml;
+                el.className = errorClass;
+            }
+        });
     }
 
     // Fetch All Data from Sheets on Load (Using JSONP due to Google Apps Script CORS)
@@ -503,9 +540,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        setCloudStatus('loading');
-        transactionList.classList.add('hidden');
-        listLoading.classList.remove('hidden');
+        setLoading(true);
 
         // Setup JSONP callback
         const callbackName = 'jsonpCallback_' + Math.round(100000 * Math.random());
@@ -533,8 +568,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Cleanup
             delete window[callbackName];
             document.body.removeChild(script);
-            listLoading.classList.add('hidden');
-            transactionList.classList.remove('hidden');
+            setLoading(false);
             updateUI();
         };
 
@@ -546,8 +580,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Error fetching from sheets (Network or CORS).');
             setCloudStatus('error');
             delete window[callbackName];
-            listLoading.classList.add('hidden');
-            transactionList.classList.remove('hidden');
+            setLoading(false);
             updateUI();
         };
 
@@ -640,53 +673,73 @@ document.addEventListener('DOMContentLoaded', () => {
         submitBtn.disabled = false;
     });
 
-    // --- Settings Modal Logic --- //
-    const openModal = () => {
-        sheetUrlInput.value = userSheetUrl;
-        settingsStatusMsg.classList.add('hidden');
-        settingsModal.classList.remove('hidden');
-        setTimeout(() => {
-            settingsModal.classList.remove('opacity-0');
-            document.getElementById('settingsModalContent').classList.remove('scale-95');
-        }, 10);
-    };
+    // --- Settings Logic removed as it's now a view --- //
+    if (activeProfileIndicator) activeProfileIndicator.addEventListener('click', () => switchView('profiles'));
 
-    const closeModal = () => {
-        settingsModal.classList.add('opacity-0');
-        document.getElementById('settingsModalContent').classList.add('scale-95');
-        setTimeout(() => {
-            settingsModal.classList.add('hidden');
-        }, 300);
-    };
-
-    openSettingsBtn.addEventListener('click', openModal);
-    closeSettingsBtn.addEventListener('click', closeModal);
-
-    // --- Profiles Management Logic --- //
-    const renderProfiles = () => {
-        profilesList.innerHTML = '';
+    // --- Profiles Management Logic (Halaman) --- //
+    const renderProfilesPage = () => {
+        if (!profilesListPage) return;
+        profilesListPage.innerHTML = '';
         profiles.forEach(prof => {
             const isActive = prof.id === activeProfileId;
             const div = document.createElement('div');
-            div.className = `flex justify-between items-center p-3 rounded-xl border cursor-pointer transition-all ${isActive ? 'bg-indigo-50 border-indigo-200' : 'bg-white border-slate-100 hover:border-slate-300'}`;
-            div.onclick = () => {
-                activeProfileId = prof.id;
-                localStorage.setItem('activeProfileId', activeProfileId);
-                updateActiveProfileIcon();
-                renderProfiles();
-                // Optional: Auto close on selection
-                closeProfileModal();
-            };
-
+            div.className = `p-5 rounded-3xl border-2 transition-all animate-slide-up ${isActive ? 'bg-indigo-50 border-indigo-200 shadow-indigo-100 shadow-lg' : 'bg-white border-slate-100 hover:border-slate-300'}`;
+            
             div.innerHTML = `
-                <div class="flex items-center space-x-3">
-                    <div class="w-8 h-8 rounded-full ${isActive ? 'bg-indigo-600' : 'bg-slate-300'} text-white font-bold flex items-center justify-center text-sm shadow-sm">${prof.name.charAt(0).toUpperCase()}</div>
-                    <span class="font-medium ${isActive ? 'text-indigo-900' : 'text-slate-700'}">${prof.name}</span>
+                <div class="flex flex-col items-center text-center space-y-4">
+                    <div class="w-16 h-16 rounded-3xl ${isActive ? 'bg-indigo-600' : 'bg-slate-200'} text-white font-bold flex items-center justify-center text-2xl shadow-indigo-200 shadow-lg transform transition-transform hover:scale-105 active:scale-95 cursor-pointer" onclick="setActiveProfile('${prof.id}')">
+                        ${prof.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-slate-800">${prof.name}</h4>
+                        <p class="text-[10px] text-slate-400 font-medium uppercase tracking-widest mt-1">${isActive ? 'Profil Aktif' : 'Profil Anggota'}</p>
+                    </div>
+                    <div class="flex items-center space-x-2 w-full pt-2">
+                        <button onclick="editProfile('${prof.id}')" class="flex-1 bg-white border border-slate-200 text-slate-600 hover:text-indigo-600 hover:border-indigo-200 p-2 rounded-xl transition-all text-xs font-bold flex items-center justify-center">
+                            <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v12a2 2 0 00-2 2h10a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                            Edit
+                        </button>
+                        ${profiles.length > 1 ? `
+                        <button onclick="deleteProfile('${prof.id}')" class="bg-white border border-slate-200 text-slate-400 hover:text-rose-600 hover:border-rose-200 p-2 rounded-xl transition-all text-xs font-bold flex items-center justify-center px-3">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                        ` : ''}
+                    </div>
                 </div>
-                ${isActive ? '<svg class="w-5 h-5 text-indigo-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>' : ''}
             `;
-            profilesList.appendChild(div);
+            profilesListPage.appendChild(div);
         });
+    };
+
+    window.setActiveProfile = (id) => {
+        activeProfileId = id;
+        localStorage.setItem('activeProfileId', activeProfileId);
+        updateActiveProfileIcon();
+        renderProfilesPage();
+    };
+
+    window.editProfile = (id) => {
+        const prof = profiles.find(p => p.id === id);
+        if (!prof) return;
+        const newName = prompt('Ubah nama profil menjadi:', prof.name);
+        if (newName && newName.trim() !== '') {
+            prof.name = newName.trim();
+            localStorage.setItem('profiles', JSON.stringify(profiles));
+            renderProfilesPage();
+            updateActiveProfileIcon();
+        }
+    };
+
+    window.deleteProfile = (id) => {
+        if (profiles.length <= 1) return;
+        if (confirm('Yakin ingin menghapus profil ini? Semua riwayat tetap tersimpan namun label profil akan berubah.')) {
+            profiles = profiles.filter(p => p.id !== id);
+            if (activeProfileId === id) activeProfileId = profiles[0].id;
+            localStorage.setItem('profiles', JSON.stringify(profiles));
+            localStorage.setItem('activeProfileId', activeProfileId);
+            renderProfilesPage();
+            updateActiveProfileIcon();
+        }
     };
 
     const updateActiveProfileIcon = () => {
@@ -697,62 +750,47 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const openProfileModal = () => {
-        if (window.innerWidth < 1024) toggleSidebar(); // Close sidebar if mobile
-        renderProfiles();
-        profileModal.classList.remove('hidden');
-        setTimeout(() => {
-            profileModal.classList.remove('opacity-0');
-            document.getElementById('profileModalContent').classList.remove('scale-95');
-        }, 10);
-    };
+    // --- Handled by addProfileFormPage listener below --- //
 
-    const closeProfileModal = () => {
-        profileModal.classList.add('opacity-0');
-        document.getElementById('profileModalContent').classList.add('scale-95');
-        setTimeout(() => {
-            profileModal.classList.add('hidden');
-        }, 300);
-    };
-
-    if (menuProfiles) menuProfiles.addEventListener('click', (e) => { e.preventDefault(); openProfileModal(); });
-    if (activeProfileIndicator) activeProfileIndicator.addEventListener('click', openProfileModal);
-    if (closeProfileBtn) closeProfileBtn.addEventListener('click', closeProfileModal);
-
-    if (addProfileForm) addProfileForm.addEventListener('submit', (e) => {
+    if (addProfileFormPage) addProfileFormPage.addEventListener('submit', (e) => {
         e.preventDefault();
-        const name = newProfileName.value.trim();
+        const name = newProfileNamePage.value.trim();
         if (name) {
             profiles.push({ id: Date.now().toString(), name: name });
             localStorage.setItem('profiles', JSON.stringify(profiles));
-            newProfileName.value = '';
-            renderProfiles();
+            newProfileNamePage.value = '';
+            renderProfilesPage();
         }
     });
 
     // --- Settings Modal Saving --- //
-    saveSettingsBtn.addEventListener('click', () => {
-        const inputUrl = sheetUrlInput.value.trim();
+    // --- Settings Logic (Halaman) --- //
+    if (saveSettingsBtnPage) {
+        saveSettingsBtnPage.addEventListener('click', () => {
+            const inputUrl = sheetUrlInputPage.value.trim();
 
-        if (inputUrl && !inputUrl.includes('docs.google.com/spreadsheets')) {
-            settingsStatusMsg.textContent = 'Gagal: Link Spreadsheet tidak valid.';
-            settingsStatusMsg.className = 'text-xs text-center font-medium text-rose-600 mt-2 block';
-            return;
-        }
-
-        const urlChanged = userSheetUrl !== inputUrl;
-        userSheetUrl = inputUrl;
-        localStorage.setItem('userSheetUrl', userSheetUrl);
-
-        settingsStatusMsg.textContent = 'Berhasil! Data akan dimuat.';
-        settingsStatusMsg.className = 'text-xs text-center font-medium text-emerald-600 mt-2 block';
-        setTimeout(() => {
-            closeModal();
-            if (urlChanged) {
-                fetchFromSheets(); // Fetch new data immediately
+            if (inputUrl && !inputUrl.includes('docs.google.com/spreadsheets')) {
+                settingsStatusMsgPage.textContent = 'Gagal: Link Spreadsheet tidak valid.';
+                settingsStatusMsgPage.className = 'text-sm text-center font-bold text-rose-600 mt-4 block';
+                settingsStatusMsgPage.classList.remove('hidden');
+                return;
             }
-        }, 1200);
-    });
+
+            const urlChanged = userSheetUrl !== inputUrl;
+            userSheetUrl = inputUrl;
+            localStorage.setItem('userSheetUrl', userSheetUrl);
+
+            settingsStatusMsgPage.textContent = 'Berhasil! Data sedang disinkronisasi...';
+            settingsStatusMsgPage.className = 'text-sm text-center font-bold text-emerald-600 mt-4 block';
+            settingsStatusMsgPage.classList.remove('hidden');
+
+            setTimeout(() => {
+                if (urlChanged) fetchFromSheets();
+                // Optionally go back to dashboard after save
+                setTimeout(() => switchView('dashboard'), 1500);
+            }, 1000);
+        });
+    }
 
     // Initialize date to today
     document.getElementById('date').valueAsDate = new Date();
@@ -767,5 +805,10 @@ document.addEventListener('DOMContentLoaded', () => {
     updateActiveProfileIcon();
 
     // Initial Load
-    fetchFromSheets(); // Will try to fetch from cloud. If no URL, updates local only.
+    // Initial Load
+    fetchFromSheets();
+    // Default show dashboard
+    switchView('dashboard');
+    // Pre-fill settings if exists
+    if (sheetUrlInputPage) sheetUrlInputPage.value = userSheetUrl;
 });
