@@ -41,6 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const sortOrder = document.getElementById('sortOrder');
 
     // List & Filter Elements
+    const balanceLoading = document.getElementById('balanceLoading');
     const dashboardListLoading = document.getElementById('dashboardListLoading');
     const historyListLoading = document.getElementById('historyListLoading');
     const recentTransactionList = document.getElementById('recentTransactionList');
@@ -123,7 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Reset all menu items
         [menuDashboard, menuHistory, menuProfiles, menuSettings].forEach(m => {
             if (m) {
-                m.classList.remove('bg-indigo-50', 'text-indigo-700');
+                m.classList.remove('sidebar-link-active');
                 m.classList.add('text-slate-600');
             }
         });
@@ -144,22 +145,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (activeView) {
             activeView.classList.remove('hidden');
-            setTimeout(() => activeView.classList.remove('opacity-0'), 10);
         }
 
         if (activeMenu) {
-            activeMenu.classList.add('bg-indigo-50', 'text-indigo-700');
+            activeMenu.classList.add('sidebar-link-active');
             activeMenu.classList.remove('text-slate-600');
         }
 
-        if (headerTitle) {
-            headerTitle.textContent = {
-                'dashboard': 'Dashboard Overview',
-                'history': 'Riwayat & Grafik',
-                'profiles': 'Manajemen Profil',
-                'settings': 'Pengaturan Cloud'
-            }[viewName] || 'Monitoring Money';
-        }
+        const viewTitles = {
+            'dashboard': { main: 'Dashboard', sub: 'Overview' },
+            'history': { main: 'Riwayat & Grafik', sub: 'Data Arus Kas' },
+            'profiles': { main: 'Manajemen Profil', sub: 'Personalitas & Anggota' },
+            'settings': { main: 'Pengaturan Cloud', sub: 'Konfigurasi Spreadsheet' }
+        };
+
+        const titleData = viewTitles[viewName] || { main: 'Aplikasi', sub: 'Monitoring' };
+
+        // Update Desktop Header
+        if (headerTitle) headerTitle.textContent = titleData.main;
+        const headerSub = document.getElementById('headerSubtitle');
+        if (headerSub) headerSub.textContent = titleData.sub;
+
+        // Update Mobile Area
+        const mTitle = document.getElementById('mobileHeaderTitle');
+        const mSub = document.getElementById('mobileHeaderSubtitle');
+        if (mTitle) mTitle.textContent = titleData.main;
+        if (mSub) mSub.textContent = titleData.sub;
 
         if (viewName === 'dashboard') renderDashboardList();
         if (viewName === 'history') renderHistoryList();
@@ -238,19 +249,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // -----------------------------------------
     const setLoading = (isLoading) => {
         if (isLoading) {
-            balanceLoading.classList.remove('hidden');
-            document.getElementById('balance').classList.add('hidden');
-            document.getElementById('totalIncome').textContent = '...';
-            document.getElementById('totalExpense').textContent = '...';
-            dashboardListLoading.classList.remove('hidden');
-            historyListLoading.classList.remove('hidden');
+            if (balanceLoading) balanceLoading.classList.remove('hidden');
+            if (balanceEl) balanceEl.classList.add('hidden');
+            if (totalIncomeEl) totalIncomeEl.textContent = '...';
+            if (totalExpenseEl) totalExpenseEl.textContent = '...';
+            if (dashboardListLoading) dashboardListLoading.classList.remove('hidden');
+            if (historyListLoading) historyListLoading.classList.remove('hidden');
             recentTransactionList.innerHTML = '';
             historyTransactionList.innerHTML = '';
         } else {
-            balanceLoading.classList.add('hidden');
-            document.getElementById('balance').classList.remove('hidden');
-            dashboardListLoading.classList.add('hidden');
-            historyListLoading.classList.add('hidden');
+            if (balanceLoading) balanceLoading.classList.add('hidden');
+            if (balanceEl) balanceEl.classList.remove('hidden');
+            if (dashboardListLoading) dashboardListLoading.classList.add('hidden');
+            if (historyListLoading) historyListLoading.classList.add('hidden');
         }
     };
 
@@ -276,8 +287,27 @@ document.addEventListener('DOMContentLoaded', () => {
             else totalExpense += parseFloat(trx.amount);
         });
 
-        document.getElementById('balance').textContent = formatCurrency(totalIncome - totalExpense);
-        document.getElementById('balance').className = `text-4xl font-extrabold mb-8 tracking-tight ${totalIncome - totalExpense < 0 ? 'text-rose-500' : 'text-slate-800'}`;
+        const netBalance = totalIncome - totalExpense;
+        const balanceEl = document.getElementById('balance');
+        const balanceCard = document.getElementById('balanceCard');
+        const balanceBadge = document.getElementById('balanceBadge');
+
+        balanceEl.textContent = formatCurrency(netBalance);
+
+        if (netBalance < 0) {
+            balanceCard.classList.remove('card-gradient-surplus', 'card-glow-surplus');
+            balanceCard.classList.add('card-gradient-deficit', 'card-glow-deficit');
+            balanceBadge.innerHTML = `<span class="w-1.5 h-1.5 bg-rose-400 rounded-full mr-2"></span> Defisit`;
+            balanceBadge.classList.remove('bg-white/10', 'text-white/70');
+            balanceBadge.classList.add('bg-rose-500/20', 'text-rose-100');
+        } else {
+            balanceCard.classList.remove('card-gradient-deficit', 'card-glow-deficit');
+            balanceCard.classList.add('card-gradient-surplus', 'card-glow-surplus');
+            balanceBadge.innerHTML = `<span class="w-1.5 h-1.5 bg-emerald-400 rounded-full mr-2 animate-ping"></span> Aman`;
+            balanceBadge.classList.add('bg-white/10', 'text-white/70');
+            balanceBadge.classList.remove('bg-rose-500/20', 'text-rose-100');
+        }
+
         document.getElementById('totalIncome').textContent = formatCurrency(totalIncome);
         document.getElementById('totalExpense').textContent = formatCurrency(totalExpense);
 
@@ -301,23 +331,25 @@ document.addEventListener('DOMContentLoaded', () => {
         dashTx.forEach((trx) => {
             const isIncome = trx.type === 'Pemasukan';
             const amountClass = isIncome ? 'text-emerald-500' : 'text-rose-500';
+            const iconBg = isIncome ? 'bg-emerald-50' : 'bg-rose-50';
+            const iconColor = isIncome ? 'text-emerald-500' : 'text-rose-500';
             const icon = isIncome
-                ? `<svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>`
-                : `<svg class="w-5 h-5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"></path></svg>`;
+                ? `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>`
+                : `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"></path></svg>`;
 
             const profInitial = trx.profile ? trx.profile.charAt(0).toUpperCase() : '?';
-            const profileBadge = `<span class="inline-flex items-center justify-center h-4 w-4 rounded-full bg-slate-200 text-[9px] font-bold text-slate-600 mr-1" title="Dicatat oleh ${trx.profile || 'Utama'}">${profInitial}</span>`;
+            const profileBadge = `<span class="inline-flex items-center justify-center h-5 w-5 rounded-lg bg-slate-100 text-[10px] font-black text-slate-500 mr-2 border border-slate-200" title="Dicatat oleh ${trx.profile || 'Utama'}">${profInitial}</span>`;
 
             recentTransactionList.innerHTML += `
-                <div class="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl border border-slate-100 shadow-sm transition-all hover:shadow-md animate-slide-up">
-                    <div class="flex items-center space-x-3">
-                        <div class="p-1.5 bg-white rounded-lg shadow-sm border border-slate-100">${icon}</div>
+                <div class="flex items-center justify-between p-5 bg-white rounded-3xl border border-slate-100 shadow-sm transition-all hover:shadow-xl hover:shadow-slate-200/50 group animate-slide-up">
+                    <div class="flex items-center space-x-4">
+                        <div class="p-3 ${iconBg} ${iconColor} rounded-2xl transition-transform group-hover:scale-110 shadow-sm">${icon}</div>
                         <div>
-                            <p class="font-semibold text-slate-800 text-sm">${trx.category}</p>
-                            <p class="text-[11px] text-slate-500 flex items-center">${profileBadge} ${formatDate(trx.date)}</p>
+                            <p class="font-black text-slate-800 text-sm tracking-tight">${trx.category}</p>
+                            <p class="text-[10px] text-slate-400 font-bold flex items-center mt-1 uppercase tracking-widest">${profileBadge} ${formatDate(trx.date)}</p>
                         </div>
                     </div>
-                    <div class="font-bold text-sm ${amountClass}">
+                    <div class="font-black text-base ${amountClass} tracking-tight">
                         ${isIncome ? '+' : '-'}${formatCurrency(trx.amount)}
                     </div>
                 </div>`;
@@ -372,26 +404,28 @@ document.addEventListener('DOMContentLoaded', () => {
         processedTransactions.forEach((trx) => {
             const isIncome = trx.type === 'Pemasukan';
             const amountClass = isIncome ? 'text-emerald-500' : 'text-rose-500';
+            const iconBg = isIncome ? 'bg-emerald-50' : 'bg-rose-50';
+            const iconColor = isIncome ? 'text-emerald-500' : 'text-rose-500';
             const icon = isIncome
-                ? `<svg class="w-6 h-6 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>`
-                : `<svg class="w-6 h-6 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"></path></svg>`;
+                ? `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>`
+                : `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"></path></svg>`;
 
             const profInitial = trx.profile ? trx.profile.charAt(0).toUpperCase() : '?';
-            const profileBadge = `<span class="inline-flex items-center justify-center h-4 w-4 rounded-full bg-slate-200 text-[9px] font-bold text-slate-600 mr-1" title="Dicatat oleh ${trx.profile || 'Utama'}">${profInitial}</span>`;
+            const profileBadge = `<span class="inline-flex items-center justify-center h-5 w-5 rounded-lg bg-slate-100 text-[10px] font-black text-slate-500 mr-2 border border-slate-200" title="Dicatat oleh ${trx.profile || 'Utama'}">${profInitial}</span>`;
 
             const div = document.createElement('div');
-            div.className = 'flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100 shadow-sm transition-all hover:shadow-md animate-slide-up';
+            div.className = 'flex items-center justify-between p-6 bg-white rounded-[2rem] border border-slate-100 shadow-sm transition-all hover:shadow-xl hover:shadow-indigo-100/30 group animate-slide-up';
             div.innerHTML = `
-                <div class="flex items-center space-x-4">
-                    <div class="p-2 bg-white rounded-lg shadow-sm border border-slate-100">
+                <div class="flex items-center space-x-5">
+                    <div class="p-3 ${iconBg} ${iconColor} rounded-2xl transition-transform group-hover:scale-110 shadow-sm">
                         ${icon}
                     </div>
                     <div>
-                        <p class="font-semibold text-slate-800">${trx.category}</p>
-                        <p class="text-xs text-slate-500 flex items-center">${profileBadge} ${formatDate(trx.date)} • ${trx.note || '-'}</p>
+                        <p class="font-black text-slate-800 tracking-tight">${trx.category}</p>
+                        <p class="text-[10px] text-slate-400 font-bold flex items-center mt-1 uppercase tracking-widest">${profileBadge} ${formatDate(trx.date)} • ${trx.note || '-'}</p>
                     </div>
                 </div>
-                <div class="font-bold ${amountClass}">
+                <div class="font-black text-lg ${amountClass} tracking-tight">
                     ${isIncome ? '+' : '-'}${formatCurrency(trx.amount)}
                 </div>
             `;
@@ -507,16 +541,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const setCloudStatus = (status, type) => {
         const loadingHtml = `<svg class="animate-spin -ml-1 mr-2 h-3 w-3 text-amber-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Memeriksa Data Cloud...`;
         const loadingClass = 'flex items-center text-xs font-medium bg-amber-50 text-amber-600 px-3 py-1.5 rounded-full';
-        
+
         const syncedHtml = `<svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg> Tersinkron Cloud`;
         const syncedClass = 'flex items-center text-xs font-medium bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-full';
-        
+
         let msg = type === 'nosheet' ? 'Lokal Saja' : 'Offline / Error';
         const errorHtml = `<svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> ${msg}`;
         const errorClass = 'flex items-center text-xs font-medium bg-rose-50 text-rose-600 px-3 py-1.5 rounded-full';
 
         const targets = [cloudSyncStatusDashboard, cloudSyncStatusHistory];
-        
+
         targets.forEach(el => {
             if (!el) return;
             if (status === 'loading') {
@@ -683,25 +717,28 @@ document.addEventListener('DOMContentLoaded', () => {
         profiles.forEach(prof => {
             const isActive = prof.id === activeProfileId;
             const div = document.createElement('div');
-            div.className = `p-5 rounded-3xl border-2 transition-all animate-slide-up ${isActive ? 'bg-indigo-50 border-indigo-200 shadow-indigo-100 shadow-lg' : 'bg-white border-slate-100 hover:border-slate-300'}`;
-            
+            div.className = `p-6 rounded-[2rem] border-2 transition-all profile-card ${isActive ? 'bg-indigo-50/50 border-indigo-200 shadow-xl shadow-indigo-100/50' : 'bg-white border-slate-100 hover:border-indigo-100 hover:shadow-xl hover:shadow-slate-200/50'}`;
+
             div.innerHTML = `
-                <div class="flex flex-col items-center text-center space-y-4">
-                    <div class="w-16 h-16 rounded-3xl ${isActive ? 'bg-indigo-600' : 'bg-slate-200'} text-white font-bold flex items-center justify-center text-2xl shadow-indigo-200 shadow-lg transform transition-transform hover:scale-105 active:scale-95 cursor-pointer" onclick="setActiveProfile('${prof.id}')">
-                        ${prof.name.charAt(0).toUpperCase()}
+                <div class="flex flex-col items-center text-center space-y-6">
+                    <div class="relative group">
+                        <div class="w-20 h-20 rounded-3xl ${isActive ? 'card-gradient text-white shadow-indigo-300/50' : 'bg-slate-200 text-slate-800 shadow-slate-200/50'} font-black flex items-center justify-center text-3xl shadow-lg transform transition-all group-hover:scale-110 active:scale-95 cursor-pointer" onclick="setActiveProfile('${prof.id}')">
+                            ${prof.name.charAt(0).toUpperCase()}
+                        </div>
+                        ${isActive ? '<div class="absolute -right-2 -bottom-2 bg-emerald-500 text-white p-1.5 rounded-xl border-4 border-white shadow-lg"><svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg></div>' : ''}
                     </div>
                     <div>
-                        <h4 class="font-bold text-slate-800">${prof.name}</h4>
-                        <p class="text-[10px] text-slate-400 font-medium uppercase tracking-widest mt-1">${isActive ? 'Profil Aktif' : 'Profil Anggota'}</p>
+                        <h4 class="font-black text-slate-800 text-lg">${prof.name}</h4>
+                        <p class="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mt-2">${isActive ? 'Profil Aktif' : 'Profil Anggota'}</p>
                     </div>
                     <div class="flex items-center space-x-2 w-full pt-2">
-                        <button onclick="editProfile('${prof.id}')" class="flex-1 bg-white border border-slate-200 text-slate-600 hover:text-indigo-600 hover:border-indigo-200 p-2 rounded-xl transition-all text-xs font-bold flex items-center justify-center">
-                            <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v12a2 2 0 00-2 2h10a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                        <button onclick="editProfile('${prof.id}')" class="flex-1 bg-white border border-slate-200 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 hover:border-indigo-200 py-3 rounded-2xl transition-all text-xs font-black flex items-center justify-center">
+                            <svg class="w-3.5 h-3.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v12a2 2 0 00-2 2h10a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                             Edit
                         </button>
                         ${profiles.length > 1 ? `
-                        <button onclick="deleteProfile('${prof.id}')" class="bg-white border border-slate-200 text-slate-400 hover:text-rose-600 hover:border-rose-200 p-2 rounded-xl transition-all text-xs font-bold flex items-center justify-center px-3">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        <button onclick="deleteProfile('${prof.id}')" class="bg-white border border-slate-200 text-slate-400 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-200 py-3 rounded-2xl transition-all text-xs font-black flex items-center justify-center px-4">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                         </button>
                         ` : ''}
                     </div>
@@ -769,9 +806,16 @@ document.addEventListener('DOMContentLoaded', () => {
         saveSettingsBtnPage.addEventListener('click', () => {
             const inputUrl = sheetUrlInputPage.value.trim();
 
-            if (inputUrl && !inputUrl.includes('docs.google.com/spreadsheets')) {
+            if (!inputUrl) {
+                settingsStatusMsgPage.textContent = 'Wajib Diisi: Link Spreadsheet tidak boleh kosong.';
+                settingsStatusMsgPage.className = 'text-sm text-center font-bold text-rose-600 mt-4 block p-4 bg-rose-50 rounded-2xl border border-rose-100';
+                settingsStatusMsgPage.classList.remove('hidden');
+                return;
+            }
+
+            if (!inputUrl.includes('docs.google.com/spreadsheets')) {
                 settingsStatusMsgPage.textContent = 'Gagal: Link Spreadsheet tidak valid.';
-                settingsStatusMsgPage.className = 'text-sm text-center font-bold text-rose-600 mt-4 block';
+                settingsStatusMsgPage.className = 'text-sm text-center font-bold text-rose-600 mt-4 block p-4 bg-rose-50 rounded-2xl border border-rose-100';
                 settingsStatusMsgPage.classList.remove('hidden');
                 return;
             }
@@ -805,10 +849,21 @@ document.addEventListener('DOMContentLoaded', () => {
     updateActiveProfileIcon();
 
     // Initial Load
-    // Initial Load
     fetchFromSheets();
-    // Default show dashboard
-    switchView('dashboard');
+
+    // Redirect to settings if no sheet URL found (onboarding)
+    if (!userSheetUrl) {
+        switchView('settings');
+        // Show nudge message in settings
+        if (settingsStatusMsgPage) {
+            settingsStatusMsgPage.textContent = 'Halo! Harap hubungkan Spreadsheet Anda terlebih dahulu untuk memulai.';
+            settingsStatusMsgPage.className = 'text-sm text-center font-bold text-indigo-600 mt-4 block p-4 bg-indigo-50 rounded-2xl border border-indigo-100 animate-pulse';
+            settingsStatusMsgPage.classList.remove('hidden');
+        }
+    } else {
+        switchView('dashboard');
+    }
+
     // Pre-fill settings if exists
     if (sheetUrlInputPage) sheetUrlInputPage.value = userSheetUrl;
 });

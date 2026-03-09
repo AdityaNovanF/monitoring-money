@@ -28,22 +28,45 @@
         }
     </script>
     <style>
-        /* Hide scrollbar completely but allow scrolling */
-        ::-webkit-scrollbar { display: none; }
-        * { -ms-overflow-style: none; scrollbar-width: none; }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
+        * { -ms-overflow-style: auto; scrollbar-width: thin; scrollbar-color: #e2e8f0 transparent; }
         
-        .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255, 255, 255, 0.3); }
+        .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); border-bottom: 1px solid rgba(255, 255, 255, 0.3); }
+        .glass-sidebar { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+        
+        .card-gradient { background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); }
+        .card-gradient-surplus { background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); }
+        .card-gradient-deficit { background: linear-gradient(135deg, #475569 0%, #e11d48 100%); }
+        .card-glow-surplus { box-shadow: 0 10px 40px -10px rgba(99, 102, 241, 0.5); }
+        .card-glow-deficit { box-shadow: 0 10px 40px -10px rgba(225, 29, 72, 0.5); }
+        
+        /* Entrance Animations */
+        @keyframes fadeInScale { from { opacity: 0; transform: scale(0.98) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        .animate-premium { animation: fadeInScale 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        
+        /* Floating Animation */
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0px); } }
+        .animate-float { animation: float 3s ease-in-out infinite; }
 
-        /* Smooth slide up animation */
-        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-slide-up { animation: slideUp 0.4s ease-out forwards; }
+        .sidebar-link { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; }
+        .sidebar-link-active { background: linear-gradient(90deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%); border-left: 4px solid #6366f1; color: #6366f1 !important; font-weight: 700; }
+        
+        input:focus { border-color: #6366f1; box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1); }
+        .profile-card:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1); }
+        
+        /* Smooth Entrance */
+        .animate-slide-up { animation: fadeInScale 0.4s ease-out forwards; }
 
-        /* Hide radio dots */
         input[type="radio"]:checked + label {
-            background-color: #f1f5f9;
-            border-color: #6366f1;
-            color: #6366f1;
-            font-weight: 600;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            border-color: transparent;
+            color: white;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
         }
     </style>
 </head>
@@ -53,9 +76,9 @@
     <div id="sidebarOverlay" class="fixed inset-0 bg-slate-900/50 z-40 lg:hidden opacity-0 pointer-events-none transition-opacity duration-300"></div>
 
     <!-- Sidebar Navigation -->
-    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 bg-white border-r border-slate-100 shadow-2xl lg:shadow-none lg:static lg:translate-x-0 transform -translate-x-full transition-transform duration-300 flex flex-col">
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 glass-sidebar border-r border-slate-200/50 shadow-2xl lg:shadow-indigo-100/20 lg:static lg:translate-x-0 transform -translate-x-full transition-all duration-300 flex flex-col lg:m-4 lg:rounded-3xl lg:border lg:h-[calc(100vh-2rem)]">
         <!-- Sidebar Header (Logo) -->
-        <div class="h-32 flex items-center justify-center border-b border-slate-100 relative bg-white">
+        <div class="h-32 flex items-center justify-center relative">
             <div class="flex items-center justify-center h-full w-full">
                 <img src="assets/logo-mm.png" alt="Logo" class="h-28 w-auto object-contain" onerror="this.onerror=null; this.parentElement.querySelector('.fallback-logo').classList.remove('hidden'); this.style.display='none';">
                 <div class="fallback-logo hidden h-16 w-16 bg-gradient-to-tr from-primary to-secondary flex items-center justify-center shadow-lg shadow-indigo-200 rounded-full">
@@ -74,11 +97,11 @@
             <div>
                 <p class="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Keuangan</p>
                 <nav class="space-y-1">
-                    <a href="#" id="menuDashboard" class="sidebar-link active flex items-center px-4 py-3 bg-indigo-50 text-indigo-700 rounded-xl font-medium transition-colors">
+                    <a href="#" id="menuDashboard" class="sidebar-link flex items-center px-4 py-3 rounded-xl font-medium">
                         <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
                         Dashboard
                     </a>
-                    <a href="#" id="menuHistory" class="sidebar-link flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-xl font-medium transition-colors">
+                    <a href="#" id="menuHistory" class="sidebar-link flex items-center px-4 py-3 text-slate-600 rounded-xl font-medium">
                         <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
                         Riwayat Transaksi & Grafik
                     </a>
@@ -89,11 +112,11 @@
             <div>
                 <p class="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Sistem & Kolaborasi</p>
                 <nav class="space-y-1">
-                    <a href="#" id="menuProfiles" class="sidebar-link flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-xl font-medium transition-colors">
+                    <a href="#" id="menuProfiles" class="sidebar-link flex items-center px-4 py-3 text-slate-600 rounded-xl font-medium">
                         <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                         Manajemen Profil
                     </a>
-                    <a href="#" id="menuSettings" class="sidebar-link flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-xl font-medium transition-colors">
+                    <a href="#" id="menuSettings" class="sidebar-link flex items-center px-4 py-3 text-slate-600 rounded-xl font-medium">
                         <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                         Pengaturan Cloud
                     </a>
@@ -111,69 +134,86 @@
     <div class="flex-1 flex flex-col min-w-0 transition-all duration-300 relative">
         
         <!-- Header / Navbar -->
-        <header class="glass sticky top-0 z-30 px-4 md:px-8 py-4 flex justify-between items-center shadow-sm relative">
-            <div class="flex items-center">
+        <header class="glass sticky top-2 z-30 mx-4 md:mx-8 my-4 px-6 py-4 flex justify-between items-center rounded-3xl shadow-xl shadow-slate-200/20 border border-white/50 relative overflow-hidden">
+            <div class="absolute inset-0 bg-white/40 backdrop-blur-3xl -z-10"></div>
+            <div class="flex items-center relative z-10">
                 <!-- Hamburger Menu Btn (Mobile) -->
-                <button id="openSidebarBtn" class="lg:hidden p-2 mr-3 text-slate-500 hover:text-slate-800 focus:outline-none rounded-lg hover:bg-slate-100 transition-colors">
+                <button id="openSidebarBtn" class="lg:hidden p-2.5 mr-4 text-slate-500 hover:text-indigo-600 focus:outline-none rounded-2xl hover:bg-white/50 transition-all duration-300 shadow-sm border border-transparent hover:border-indigo-100/50">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path></svg>
                 </button>
-                <h2 id="headerTitle" class="text-lg font-bold text-slate-800 hidden sm:block tracking-tight">Dashboard Overview</h2>
+                <div class="hidden lg:flex flex-col">
+                    <h2 id="headerTitle" class="text-sm font-black text-slate-800 tracking-tight uppercase">Dashboard</h2>
+                    <p id="headerSubtitle" class="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em] leading-none mt-1">Overview</p>
+                </div>
             </div>
             
             <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 lg:hidden">
                 <img src="assets/logo-mm.png" alt="Logo" class="h-16 w-auto object-contain">
             </div>
 
-            <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-5 relative z-10">
                 <!-- Account Info -->
-                <div class="hidden sm:block text-right">
-                    <p id="userAccountName" class="text-sm font-semibold text-slate-700">-</p>
-                    <p id="sheetDocName" class="text-xs text-slate-400">Belum Terhubung</p>
+                <div class="hidden md:block text-right">
+                    <p id="userAccountName" class="text-xs font-black text-slate-800 uppercase tracking-tight">-</p>
+                    <p id="sheetDocName" class="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Offline Mode</p>
                 </div>
                 <!-- Profile Avatar Indicator -->
-                <div id="activeProfileIndicator" class="h-9 w-9 rounded-full bg-slate-200 border-2 border-white shadow-sm flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-indigo-100 transition-all font-bold text-slate-600 text-sm" title="Kelola Profil">?</div>
+                <div id="activeProfileIndicator" class="h-10 w-10 rounded-2xl bg-white border border-slate-100 shadow-sm flex items-center justify-center cursor-pointer hover:shadow-lg hover:shadow-indigo-100/50 hover:border-indigo-100 hover:-translate-y-0.5 transition-all duration-300 font-black text-indigo-600 text-sm">?</div>
             </div>
         </header>
 
         <!-- Main Content Area -->
-        <main class="flex-1 overflow-y-auto px-4 py-6 md:px-8 w-full pb-24 relative">
+        <main class="flex-1 overflow-y-auto px-4 py-6 md:px-8 w-full pb-24 relative scroll-smooth">
             
+            <!-- Mobile Page Title Area -->
+            <div class="lg:hidden mb-6 animate-premium">
+                <h2 id="mobileHeaderTitle" class="text-xl font-black text-slate-800 tracking-tight uppercase">Dashboard</h2>
+                <p id="mobileHeaderSubtitle" class="text-[9px] text-slate-400 font-black uppercase tracking-[0.3em] leading-none mt-1.5 pl-0.5">Overview</p>
+            </div>
             <!-- ================= VIEW: DASHBOARD ================= -->
-            <div id="viewDashboard" class="space-y-8 transition-opacity duration-300">
+            <div id="viewDashboard" class="space-y-8 animate-premium">
                 <!-- Summary Dashboard Card -->
-                <section class="bg-white rounded-3xl p-6 shadow-xl shadow-slate-200/50 border border-slate-100 relative overflow-hidden">
-                    <!-- Decorative background blob -->
-                    <div class="absolute -right-16 -top-16 w-48 h-48 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-full blur-3xl"></div>
+                <section id="balanceCard" class="card-gradient-surplus rounded-[2.5rem] p-8 shadow-2xl card-glow-surplus relative overflow-hidden text-white transition-all duration-500">
+                    <!-- Decorative elements -->
+                    <div class="absolute -right-10 -top-10 w-64 h-64 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
+                    <div class="absolute -left-10 -bottom-10 w-48 h-48 bg-white/5 rounded-full blur-2xl"></div>
                     
                     <div class="relative z-10">
-                        <h2 class="text-sm font-medium text-slate-500 mb-1 uppercase tracking-wider">Total Saldo Semua Riwayat</h2>
-                        <!-- Loading State Saldo -->
-                        <div id="balanceLoading" class="animate-pulse flex items-center mb-8 hidden">
-                            <div class="h-10 bg-slate-200 rounded w-48"></div> 
+                        <div class="flex items-center justify-between mb-2">
+                            <h2 class="text-[10px] font-black text-white/70 uppercase tracking-[0.2em]">Total Saldo Tersedia</h2>
+                            <div id="balanceBadge" class="flex items-center bg-white/10 backdrop-blur-md px-3 py-1 rounded-full text-[9px] font-black border border-white/20 uppercase tracking-widest transition-all">
+                                <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full mr-2 animate-ping"></span> Aman
+                            </div>
                         </div>
-                        <div class="text-4xl font-extrabold text-slate-800 mb-8 tracking-tight" id="balance">Rp 0</div>
+
+                        <!-- Shimmer Loading for Balance -->
+                        <div id="balanceLoading" class="animate-pulse flex items-center mb-8 hidden">
+                            <div class="h-12 bg-white/20 rounded-2xl w-64 shadow-inner"></div> 
+                        </div>
                         
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="text-5xl font-black mb-10 tracking-tighter drop-shadow-sm" id="balance">Rp 0</div>
+                        
+                        <div class="grid grid-cols-2 gap-6">
                             <!-- Income Card -->
-                            <div class="bg-emerald-50 rounded-2xl p-4 border border-emerald-100/50 flex flex-col justify-center">
-                                <div class="flex items-center space-x-2 mb-2">
-                                    <div class="p-1.5 bg-emerald-100 rounded-lg">
-                                        <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                            <div class="bg-white/10 backdrop-blur-xl rounded-[2rem] p-5 border border-white/20 flex flex-col justify-center transition-all hover:bg-white/20">
+                                <div class="flex items-center space-x-3 mb-3">
+                                    <div class="p-2 bg-white/10 rounded-xl">
+                                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
                                     </div>
-                                    <span class="text-xs font-semibold text-emerald-700 uppercase">Pemasukan</span>
+                                    <span class="text-[9px] font-black uppercase tracking-widest text-white/70">Pemasukan</span>
                                 </div>
-                                <div class="text-lg font-bold text-emerald-600" id="totalIncome">Rp 0</div>
+                                <div class="text-xl font-black" id="totalIncome">Rp 0</div>
                             </div>
                             
                             <!-- Expense Card -->
-                            <div class="bg-rose-50 rounded-2xl p-4 border border-rose-100/50 flex flex-col justify-center">
-                                <div class="flex items-center space-x-2 mb-2">
-                                    <div class="p-1.5 bg-rose-100 rounded-lg">
-                                        <svg class="w-4 h-4 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"></path></svg>
+                            <div class="bg-white/10 backdrop-blur-xl rounded-[2rem] p-5 border border-white/20 flex flex-col justify-center transition-all hover:bg-white/20">
+                                <div class="flex items-center space-x-3 mb-3">
+                                    <div class="p-2 bg-white/10 rounded-xl">
+                                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"></path></svg>
                                     </div>
-                                    <span class="text-xs font-semibold text-rose-700 uppercase">Pengeluaran</span>
+                                    <span class="text-[9px] font-black uppercase tracking-widest text-white/70">Pengeluaran</span>
                                 </div>
-                                <div class="text-lg font-bold text-rose-600" id="totalExpense">Rp 0</div>
+                                <div class="text-xl font-black" id="totalExpense">Rp 0</div>
                             </div>
                         </div>
                     </div>
@@ -184,10 +224,12 @@
                     
                     <!-- Add Transaction Form -->
                     <section class="md:col-span-6 lg:col-span-5">
-                        <div class="bg-white rounded-3xl p-6 shadow-xl shadow-slate-200/50 border border-slate-100 sticky top-24">
-                            <h3 class="text-lg font-bold text-slate-800 mb-6 flex items-center">
-                                <svg class="w-5 h-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-                                Catat Transaksi
+                        <div class="bg-white rounded-[2rem] p-8 shadow-xl shadow-slate-200/40 border border-slate-100 sticky top-24 transition-all hover:shadow-2xl">
+                            <h3 class="text-xl font-black text-slate-800 mb-8 flex items-center">
+                                <div class="p-2 bg-indigo-50 rounded-xl mr-3">
+                                    <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                                </div>
+                                Transaksi Baru
                             </h3>
                             
                             <form id="transactionForm" class="space-y-5">
@@ -258,11 +300,11 @@
 
                     <!-- Simplifed Recent History List (No Filters) -->
                     <section class="md:col-span-6 lg:col-span-7 flex flex-col">
-                        <div class="bg-white rounded-3xl p-6 shadow-xl shadow-slate-200/50 border border-slate-100 flex-1 flex flex-col min-h-[500px]">
-                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100">
+                        <div class="bg-white rounded-[2rem] p-8 shadow-xl shadow-slate-200/40 border border-slate-100 flex-1 flex flex-col min-h-[600px]">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-6 border-b border-slate-50">
                                 <div>
-                                    <h3 class="text-lg font-bold text-slate-800">Transaksi Terbaru</h3>
-                                    <p class="text-xs text-slate-500 mt-1">Menampilkan 5 aktivitas terakhir</p>
+                                    <h3 class="text-xl font-black text-slate-800 uppercase tracking-tight">Aktivitas Terakhir</h3>
+                                    <p class="text-xs text-slate-400 font-medium mt-1">Status Keuangan Real-Time</p>
                                 </div>
                                 <!-- Sync Cloud Status -->
                                 <div id="cloudSyncStatusDashboard" class="flex items-center text-xs font-medium bg-amber-50 text-amber-600 px-3 py-1.5 rounded-full">
@@ -294,24 +336,28 @@
             </div>
 
             <!-- ================= VIEW: HISTORY & CHARTS ================= -->
-            <div id="viewHistory" class="space-y-8 hidden opacity-0 transition-opacity duration-300">
+            <div id="viewHistory" class="space-y-8 hidden animate-premium">
                 <!-- CHART SECTION -->
-                <section class="bg-white rounded-3xl p-6 shadow-xl shadow-slate-200/50 border border-slate-100 relative">
-                    <h3 class="text-lg font-bold text-slate-800 mb-2">Grafik Riwayat Keuangan</h3>
-                    <p class="text-sm text-slate-500 mb-6">Melihat arus kas pemasukan dan pengeluaran berdasarkan waktu.</p>
-                    
-                    <div class="w-full h-64 md:h-80 relative">
-                        <canvas id="financeChart"></canvas>
+                <section class="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/40 border border-slate-100 relative overflow-hidden">
+                    <div class="absolute -right-16 -top-16 w-64 h-64 bg-primary/5 rounded-full blur-3xl"></div>
+                    <div class="relative z-10">
+                        <h3 class="text-xl font-black text-slate-800 mb-2 tracking-tight uppercase">Analisis Arus Kas</h3>
+                        <p class="text-xs text-slate-400 font-medium mb-8">Visualisasi pemasukan dan pengeluaran Anda.</p>
+                        
+                        <div class="w-full h-64 md:h-80 relative">
+                            <canvas id="financeChart"></canvas>
+                        </div>
                     </div>
                 </section>
 
                 <!-- HISTORY LIST SECTION WITH FULL FILTERS -->
-                <section class="bg-white rounded-3xl p-6 shadow-xl shadow-slate-200/50 border border-slate-100 flex flex-col min-h-[600px]">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100">
-                        <h3 class="text-lg font-bold text-slate-800">Semua Riwayat Transaksi</h3>
+                <section class="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/40 border border-slate-100 flex flex-col min-h-[600px] relative overflow-hidden mt-8">
+                    <div class="absolute -left-16 -top-16 w-64 h-64 bg-secondary/5 rounded-full blur-3xl"></div>
+                    <div class="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-6 border-b border-slate-50">
+                        <h3 class="text-xl font-black text-slate-800 uppercase tracking-tight">Semua Riwayat</h3>
                         <!-- Status Cloud History -->
-                        <div id="cloudSyncStatusHistory" class="flex items-center text-xs font-medium bg-amber-50 text-amber-600 px-3 py-1.5 rounded-full">
-                            Memeriksa...
+                        <div id="cloudSyncStatusHistory" class="flex items-center text-[10px] font-black bg-amber-50 text-amber-600 px-4 py-2 rounded-full border border-amber-100 uppercase tracking-widest">
+                            Syncing...
                         </div>
                     </div>
 
@@ -373,14 +419,16 @@
             </div>
 
             <!-- ================= VIEW: PROFILES ================= -->
-            <div id="viewProfiles" class="space-y-8 hidden opacity-0 transition-opacity duration-300">
-                <section class="bg-white rounded-3xl p-6 md:p-8 shadow-xl shadow-slate-200/50 border border-slate-100 flex flex-col min-h-[500px]">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100">
-                        <div>
-                            <h3 class="text-lg font-bold text-slate-800">Manajemen Profil Pengguna</h3>
-                            <p class="text-sm text-slate-500 mt-1">Kelola anggota keluarga atau profil yang menggunakan aplikasi ini.</p>
+            <div id="viewProfiles" class="space-y-8 hidden animate-premium">
+                <section class="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-xl shadow-slate-200/40 border border-slate-100 flex flex-col min-h-[600px] relative overflow-hidden">
+                    <div class="absolute -right-20 -bottom-20 w-80 h-80 bg-secondary/5 rounded-full blur-3xl"></div>
+                    <div class="relative z-10">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-6 border-b border-slate-100">
+                            <div>
+                                <h3 class="text-xl font-black text-slate-800 uppercase tracking-tight">Manajemen Anggota</h3>
+                                <p class="text-xs text-slate-400 font-medium mt-1">Personalisasi pencatatan keuangan keluarga Anda.</p>
+                            </div>
                         </div>
-                    </div>
 
                     <!-- Add Profile Form -->
                     <div class="mb-8 p-4 bg-slate-50 rounded-2xl border border-slate-100">
@@ -401,34 +449,43 @@
                 </section>
             </div>
 
-            <!-- ================= VIEW: SETTINGS ================= -->
-            <div id="viewSettings" class="space-y-8 hidden opacity-0 transition-opacity duration-300">
-                <section class="bg-white rounded-3xl p-6 md:p-8 shadow-xl shadow-slate-200/50 border border-slate-100 max-w-2xl mx-auto">
-                    <h3 class="text-xl font-bold text-slate-800 mb-6 flex items-center">
-                        <svg class="w-6 h-6 mr-3 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                        Pengaturan Spreadsheet
-                    </h3>
-                    
-                    <div class="mb-8 p-5 bg-indigo-50 rounded-2xl border border-indigo-100">
-                        <p class="text-sm text-indigo-900 font-semibold mb-3">Langkah Sinkronisasi Cloud:</p>
-                        <ol class="text-xs text-indigo-700 list-decimal list-inside space-y-2 leading-relaxed">
-                            <li>Buat <a href="https://sheets.google.com/create" target="_blank" class="text-indigo-600 font-bold hover:underline">Google Sheet Baru</a>.</li>
-                            <li>Klik <b>Share (Bagikan)</b> di pojok kanan atas Sheet.</li>
-                            <li>Ubah Hak Akses Umum menjadi <b>"Anyone with the link"</b>.</li>
-                            <li>Pilih peran sebagai <b>Editor</b>.</li>
-                            <li>Salin link Sheet tersebut dan tempel di bawah ini.</li>
-                        </ol>
+                <!-- ================= VIEW: SETTINGS ================= -->
+                <section id="viewSettings" class="hidden space-y-8 animate-premium pb-32">
+                    <div class="px-2">
+                        <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-6 px-1">Integrasi Google Sheets</h3>
                     </div>
-
-                    <div class="space-y-6">
-                        <div>
-                            <label class="block text-sm font-bold text-slate-700 mb-2">Link Google Spreadsheet</label>
-                            <input type="url" id="sheetUrlInputPage" placeholder="https://docs.google.com/spreadsheets/d/..." class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition duration-200 text-sm shadow-sm">
+                    <div class="bg-white rounded-[2.5rem] p-10 shadow-2xl shadow-slate-200/40 border border-slate-100 max-w-2xl mx-auto relative overflow-hidden">
+                    <div class="absolute -right-20 -top-20 w-80 h-80 bg-indigo-500/5 rounded-full blur-3xl"></div>
+                    <div class="relative z-10">
+                        <h3 class="text-2xl font-black text-slate-800 mb-8 flex items-center uppercase tracking-tight">
+                            <div class="p-3 bg-indigo-50 rounded-2xl mr-4">
+                                <svg class="w-6 h-6 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                            </div>
+                            Spreadsheet Cloud
+                        </h3>
+                        
+                        <div class="mb-10 p-6 bg-slate-50 rounded-[2rem] border border-slate-100">
+                            <p class="text-xs font-black text-slate-800 mb-4 uppercase tracking-widest">Langkah Sinkronisasi:</p>
+                            <ol class="text-xs text-slate-500 list-decimal list-inside space-y-3 leading-relaxed font-medium">
+                                <li>Buat <a href="https://sheets.google.com/create" target="_blank" class="text-indigo-600 font-bold hover:underline">Google Sheet Baru</a>.</li>
+                                <li>Klik <b>Share (Bagikan)</b> di pojok kanan atas Sheet.</li>
+                                <li>Ubah Hak Akses Umum menjadi <b>"Anyone with the link"</b>.</li>
+                                <li>Pilih peran sebagai <b>Editor</b>.</li>
+                                <li>Salin link Sheet tersebut dan tempel di bawah ini.</li>
+                            </ol>
                         </div>
-                        <button id="saveSettingsBtnPage" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-4 px-6 rounded-xl shadow-lg shadow-slate-300 transition-all duration-200 transform hover:-translate-y-0.5">
-                            Simpan & Hubungkan Sekarang
-                        </button>
-                        <div id="settingsStatusMsgPage" class="text-sm text-center font-bold hidden"></div>
+    
+                        <div class="space-y-8">
+                            <div>
+                                <label class="block text-xs font-black text-slate-500 mb-3 uppercase tracking-widest">Link Google Spreadsheet</label>
+                                <input type="url" id="sheetUrlInputPage" placeholder="https://docs.google.com/spreadsheets/d/..." class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-2xl px-6 py-4 focus:outline-none transition duration-200 text-sm shadow-sm font-medium">
+                            </div>
+                            <button id="saveSettingsBtnPage" class="w-full card-gradient hover:shadow-2xl hover:shadow-indigo-400/40 text-white font-black py-5 px-6 rounded-3xl shadow-xl shadow-indigo-200/50 transition-all duration-300 transform hover:-translate-y-1 active:scale-95 uppercase tracking-widest text-xs relative overflow-hidden group">
+                                <span class="relative z-10">Hubungkan Spreadsheet</span>
+                                <div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                            </button>
+                            <div id="settingsStatusMsgPage" class="text-sm text-center font-bold hidden"></div>
+                        </div>
                     </div>
                 </section>
             </div>
