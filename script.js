@@ -341,15 +341,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const profileBadge = `<span class="inline-flex items-center justify-center h-5 w-5 rounded-lg bg-slate-100 text-[10px] font-black text-slate-500 mr-2 border border-slate-200" title="Dicatat oleh ${trx.profile || 'Utama'}">${profInitial}</span>`;
 
             recentTransactionList.innerHTML += `
-                <div class="flex items-center justify-between p-5 bg-white rounded-3xl border border-slate-100 shadow-sm transition-all hover:shadow-xl hover:shadow-slate-200/50 group animate-slide-up">
-                    <div class="flex items-center space-x-4">
-                        <div class="p-3 ${iconBg} ${iconColor} rounded-2xl transition-transform group-hover:scale-110 shadow-sm">${icon}</div>
-                        <div>
-                            <p class="font-black text-slate-800 text-sm tracking-tight">${trx.category}</p>
-                            <p class="text-[10px] text-slate-400 font-bold flex items-center mt-1 uppercase tracking-widest">${profileBadge} ${formatDate(trx.date)}</p>
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between p-5 bg-white rounded-3xl border border-slate-100 shadow-sm transition-all hover:shadow-xl hover:shadow-slate-200/50 group animate-slide-up gap-3">
+                    <div class="flex items-center space-x-4 min-w-0">
+                        <div class="p-3 ${iconBg} ${iconColor} rounded-2xl transition-transform group-hover:scale-110 shadow-sm shrink-0">${icon}</div>
+                        <div class="min-w-0">
+                            <p class="font-black text-slate-800 text-sm tracking-tight truncate">${trx.category}</p>
+                            <p class="text-[10px] text-slate-400 font-bold flex items-center mt-1 uppercase tracking-widest truncate">${profileBadge} ${formatDate(trx.date)}</p>
                         </div>
                     </div>
-                    <div class="font-black text-base ${amountClass} tracking-tight">
+                    <div class="font-black text-sm sm:text-base ${amountClass} tracking-tight self-end sm:self-center">
                         ${isIncome ? '+' : '-'}${formatCurrency(trx.amount)}
                     </div>
                 </div>`;
@@ -414,18 +414,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const profileBadge = `<span class="inline-flex items-center justify-center h-5 w-5 rounded-lg bg-slate-100 text-[10px] font-black text-slate-500 mr-2 border border-slate-200" title="Dicatat oleh ${trx.profile || 'Utama'}">${profInitial}</span>`;
 
             const div = document.createElement('div');
-            div.className = 'flex items-center justify-between p-6 bg-white rounded-[2rem] border border-slate-100 shadow-sm transition-all hover:shadow-xl hover:shadow-indigo-100/30 group animate-slide-up';
+            div.className = 'flex flex-col sm:flex-row sm:items-center justify-between p-6 bg-white rounded-[2rem] border border-slate-100 shadow-sm transition-all hover:shadow-xl hover:shadow-indigo-100/30 group animate-slide-up gap-3';
             div.innerHTML = `
-                <div class="flex items-center space-x-5">
-                    <div class="p-3 ${iconBg} ${iconColor} rounded-2xl transition-transform group-hover:scale-110 shadow-sm">
+                <div class="flex items-center space-x-5 min-w-0">
+                    <div class="p-3 ${iconBg} ${iconColor} rounded-2xl transition-transform group-hover:scale-110 shadow-sm shrink-0">
                         ${icon}
                     </div>
-                    <div>
-                        <p class="font-black text-slate-800 tracking-tight">${trx.category}</p>
-                        <p class="text-[10px] text-slate-400 font-bold flex items-center mt-1 uppercase tracking-widest">${profileBadge} ${formatDate(trx.date)} • ${trx.note || '-'}</p>
+                    <div class="min-w-0">
+                        <p class="font-black text-slate-800 tracking-tight truncate">${trx.category}</p>
+                        <p class="text-[10px] text-slate-400 font-bold flex items-center mt-1 uppercase tracking-widest truncate">${profileBadge} ${formatDate(trx.date)} • ${trx.note || '-'}</p>
                     </div>
                 </div>
-                <div class="font-black text-lg ${amountClass} tracking-tight">
+                <div class="font-black text-base sm:text-lg ${amountClass} tracking-tight self-end sm:self-center whitespace-nowrap">
                     ${isIncome ? '+' : '-'}${formatCurrency(trx.amount)}
                 </div>
             `;

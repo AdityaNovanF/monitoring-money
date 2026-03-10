@@ -167,7 +167,7 @@
             
             <!-- Mobile Page Title Area -->
             <div class="lg:hidden mb-6 animate-premium">
-                <h2 id="mobileHeaderTitle" class="text-xl font-black text-slate-800 tracking-tight uppercase">Dashboard</h2>
+                <h2 id="mobileHeaderTitle" class="text-lg sm:text-xl font-bold sm:font-black text-slate-800 tracking-tight uppercase">Dashboard</h2>
                 <p id="mobileHeaderSubtitle" class="text-[9px] text-slate-400 font-black uppercase tracking-[0.3em] leading-none mt-1.5 pl-0.5">Overview</p>
             </div>
             <!-- ================= VIEW: DASHBOARD ================= -->
@@ -180,7 +180,7 @@
                     
                     <div class="relative z-10">
                         <div class="flex items-center justify-between mb-2">
-                            <h2 class="text-[10px] font-black text-white/70 uppercase tracking-[0.2em]">Total Saldo Tersedia</h2>
+                            <h2 class="text-[9px] sm:text-[10px] font-black text-white/70 uppercase tracking-[0.2em]">Total Saldo Tersedia</h2>
                             <div id="balanceBadge" class="flex items-center bg-white/10 backdrop-blur-md px-3 py-1 rounded-full text-[9px] font-black border border-white/20 uppercase tracking-widest transition-all">
                                 <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full mr-2 animate-ping"></span> Aman
                             </div>
@@ -191,9 +191,9 @@
                             <div class="h-12 bg-white/20 rounded-2xl w-64 shadow-inner"></div> 
                         </div>
                         
-                        <div class="text-5xl font-black mb-10 tracking-tighter drop-shadow-sm" id="balance">Rp 0</div>
+                        <div class="text-3xl sm:text-4xl md:text-5xl font-black mb-10 tracking-tighter drop-shadow-sm" id="balance">Rp 0</div>
                         
-                        <div class="grid grid-cols-2 gap-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             <!-- Income Card -->
                             <div class="bg-white/10 backdrop-blur-xl rounded-[2rem] p-5 border border-white/20 flex flex-col justify-center transition-all hover:bg-white/20">
                                 <div class="flex items-center space-x-3 mb-3">
@@ -202,7 +202,7 @@
                                     </div>
                                     <span class="text-[9px] font-black uppercase tracking-widest text-white/70">Pemasukan</span>
                                 </div>
-                                <div class="text-xl font-black" id="totalIncome">Rp 0</div>
+                                <div class="text-lg sm:text-xl font-black" id="totalIncome">Rp 0</div>
                             </div>
                             
                             <!-- Expense Card -->
@@ -213,7 +213,7 @@
                                     </div>
                                     <span class="text-[9px] font-black uppercase tracking-widest text-white/70">Pengeluaran</span>
                                 </div>
-                                <div class="text-xl font-black" id="totalExpense">Rp 0</div>
+                                <div class="text-lg sm:text-xl font-black" id="totalExpense">Rp 0</div>
                             </div>
                         </div>
                     </div>
@@ -225,7 +225,7 @@
                     <!-- Add Transaction Form -->
                     <section class="md:col-span-6 lg:col-span-5">
                         <div class="bg-white rounded-[2rem] p-8 shadow-xl shadow-slate-200/40 border border-slate-100 sticky top-24 transition-all hover:shadow-2xl">
-                            <h3 class="text-xl font-black text-slate-800 mb-8 flex items-center">
+                            <h3 class="text-lg sm:text-xl font-black text-slate-800 mb-8 flex items-center">
                                 <div class="p-2 bg-indigo-50 rounded-xl mr-3">
                                     <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
                                 </div>
@@ -303,7 +303,7 @@
                         <div class="bg-white rounded-[2rem] p-8 shadow-xl shadow-slate-200/40 border border-slate-100 flex-1 flex flex-col min-h-[600px]">
                             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-6 border-b border-slate-50">
                                 <div>
-                                    <h3 class="text-xl font-black text-slate-800 uppercase tracking-tight">Aktivitas Terakhir</h3>
+                                    <h3 class="text-lg sm:text-xl font-black text-slate-800 uppercase tracking-tight">Aktivitas Terakhir</h3>
                                     <p class="text-xs text-slate-400 font-medium mt-1">Status Keuangan Real-Time</p>
                                 </div>
                                 <!-- Sync Cloud Status -->
@@ -341,7 +341,7 @@
                 <section class="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/40 border border-slate-100 relative overflow-hidden">
                     <div class="absolute -right-16 -top-16 w-64 h-64 bg-primary/5 rounded-full blur-3xl"></div>
                     <div class="relative z-10">
-                        <h3 class="text-xl font-black text-slate-800 mb-2 tracking-tight uppercase">Analisis Arus Kas</h3>
+                        <h3 class="text-lg sm:text-xl font-black text-slate-800 mb-2 tracking-tight uppercase">Analisis Arus Kas</h3>
                         <p class="text-xs text-slate-400 font-medium mb-8">Visualisasi pemasukan dan pengeluaran Anda.</p>
                         
                         <div class="w-full h-64 md:h-80 relative">
@@ -354,7 +354,7 @@
                 <section class="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/40 border border-slate-100 flex flex-col min-h-[600px] relative overflow-hidden mt-8">
                     <div class="absolute -left-16 -top-16 w-64 h-64 bg-secondary/5 rounded-full blur-3xl"></div>
                     <div class="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-6 border-b border-slate-50">
-                        <h3 class="text-xl font-black text-slate-800 uppercase tracking-tight">Semua Riwayat</h3>
+                        <h3 class="text-lg sm:text-xl font-black text-slate-800 uppercase tracking-tight">Semua Riwayat</h3>
                         <!-- Status Cloud History -->
                         <div id="cloudSyncStatusHistory" class="flex items-center text-[10px] font-black bg-amber-50 text-amber-600 px-4 py-2 rounded-full border border-amber-100 uppercase tracking-widest">
                             Syncing...
@@ -423,9 +423,9 @@
                 <section class="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-xl shadow-slate-200/40 border border-slate-100 flex flex-col min-h-[600px] relative overflow-hidden">
                     <div class="absolute -right-20 -bottom-20 w-80 h-80 bg-secondary/5 rounded-full blur-3xl"></div>
                     <div class="relative z-10">
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-6 border-b border-slate-100">
+                        <div class="hidden sm:flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-6 border-b border-slate-100">
                             <div>
-                                <h3 class="text-xl font-black text-slate-800 uppercase tracking-tight">Manajemen Anggota</h3>
+                                <h3 class="text-lg sm:text-xl font-black text-slate-800 uppercase tracking-tight">Manajemen Anggota</h3>
                                 <p class="text-xs text-slate-400 font-medium mt-1">Personalisasi pencatatan keuangan keluarga Anda.</p>
                             </div>
                         </div>
@@ -433,11 +433,11 @@
                     <!-- Add Profile Form -->
                     <div class="mb-8 p-4 bg-slate-50 rounded-2xl border border-slate-100">
                         <label class="block text-sm font-semibold text-slate-700 mb-2">Tambah Profil Baru</label>
-                        <form id="addProfileFormPage" class="flex gap-2">
-                            <input type="text" id="newProfileNamePage" placeholder="Nama Anggota (misal: Istri)" required class="flex-1 bg-white border border-slate-200 text-slate-800 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition duration-200 shadow-sm">
-                            <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl transition-all shadow-md font-medium text-sm flex items-center">
+                        <form id="addProfileFormPage" class="flex flex-col sm:flex-row gap-3">
+                            <input type="text" id="newProfileNamePage" placeholder="Nama Anggota (misal: Istri)" required class="flex-1 bg-white border border-slate-200 text-slate-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition duration-200 shadow-sm">
+                            <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl transition-all shadow-md font-bold text-sm flex items-center justify-center whitespace-nowrap">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-                                Tambah
+                                Tambah Profil
                             </button>
                         </form>
                     </div>
@@ -451,7 +451,7 @@
 
                 <!-- ================= VIEW: SETTINGS ================= -->
                 <section id="viewSettings" class="hidden space-y-8 animate-premium pb-32">
-                    <div class="px-2">
+                    <div class="px-2 hidden sm:block">
                         <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-6 px-1">Integrasi Google Sheets</h3>
                     </div>
                     <div class="bg-white rounded-[2.5rem] p-10 shadow-2xl shadow-slate-200/40 border border-slate-100 max-w-2xl mx-auto relative overflow-hidden">
